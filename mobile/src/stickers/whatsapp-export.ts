@@ -5,7 +5,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { addStickerPack } from '../../modules/whatsapp-stickers';
 import { listPacks, listStickers, PACK_MIN_STICKERS, type Sticker } from '@/db/packs';
 
-// WhatsApp requires 1 to 3 emojis per sticker; a default is used until stickers can be tagged.
+// WhatsApp requires 1 to 3 emojis per sticker; the default covers stickers without a chosen emoji.
 const DEFAULT_EMOJIS = ['😀'];
 const TRAY_ICON_SIZE = 96;
 const TRAY_ICON_FILE = 'tray.png';
@@ -45,7 +45,10 @@ export async function exportPacksForWhatsApp(db: SQLiteDatabase) {
       tray_image_file: TRAY_ICON_FILE,
       image_data_version: `${stickers.length}-${stickers[stickers.length - 1].id}`,
       avoid_cache: false,
-      stickers: stickers.map((sticker) => ({ image_file: fileName(sticker.fileUri), emojis: DEFAULT_EMOJIS })),
+      stickers: stickers.map((sticker) => ({
+        image_file: fileName(sticker.fileUri),
+        emojis: sticker.emojis.length > 0 ? sticker.emojis : DEFAULT_EMOJIS,
+      })),
     });
   }
 

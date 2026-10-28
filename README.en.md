@@ -22,7 +22,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 
 ## Status
 
-In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. The next step is searching stickers by emoji and tag.
+In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. Stickers can also be tagged with emojis and keywords and searched within the vault. The next step is favorite and most-used stickers.
 
 ## Features
 
@@ -32,6 +32,8 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Gallery import:** pick several images at once through the Android photo picker.
 - **WhatsApp format:** each image is cropped to a square, resized to 512x512 and saved as WebP of up to 100 KB.
 - **WhatsApp limits:** 3 to 30 stickers per drawer; the app shows how many are missing to reach the minimum and blocks additions above the maximum.
+- **Emojis and tags:** tap a sticker to pick up to 3 emojis (used by WhatsApp to suggest the sticker) and add comma-separated tags.
+- **Search:** on the home screen, find stickers by emoji, tag or drawer name, ignoring case and accents.
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
@@ -194,6 +196,7 @@ Current coverage:
 | Drawers | Create a drawer; drawer shows up on the home screen; required name and author validation; delete a drawer |
 | Gallery stickers | Add stickers; reach the WhatsApp minimum; remove a sticker |
 | Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
+| Emojis, tags and search | Pick emojis; 3-emoji limit; search by tag ignoring case and accents; search by emoji; search by drawer name; search with no results |
 
 The sending scenarios run on an emulator without WhatsApp. The confirmation inside WhatsApp is validated manually on a real device:
 
@@ -261,7 +264,6 @@ Funcionalidade: Tela inicial
 
 ## Next steps
 
-- Searching stickers by emoji and tag.
 - Favorite and most-used stickers.
 - Sticker maker with automatic background removal and text.
 - Sharing drawers via QR code or file.
