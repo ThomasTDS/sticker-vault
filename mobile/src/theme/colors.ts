@@ -1,27 +1,31 @@
-import { DarkTheme, DefaultTheme, type Theme } from 'expo-router';
+import { DarkTheme, type Theme } from 'expo-router';
 
-export const VaultLightTheme: Theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#C8961E',
-    background: '#F6F3EC',
-    card: '#FFFFFF',
-    text: '#1E2430',
-    border: '#E2DCCD',
-    notification: '#C0392B',
-  },
+// Brand palette: dark brown background, cream text and logo, gold accents.
+export const palette = {
+  brown: '#100B08',
+  brownSurface: '#1D1510',
+  brownBorder: '#3A2D22',
+  cream: '#FFFAE5',
+  creamMuted: '#B8B09C',
+  gold: '#D4A64A',
+  goldLight: '#EBCB82',
+  goldDeep: '#8F6A27',
+  danger: '#E5655A',
+  whatsapp: '#25D366',
 };
 
-export const VaultDarkTheme: Theme = {
+export const VaultTheme: Theme = {
   ...DarkTheme,
+  dark: true,
   colors: {
     ...DarkTheme.colors,
-    primary: '#E0B040',
-    background: '#14171E',
-    card: '#1F2430',
-    text: '#EDEAE2',
-    border: '#2E3442',
-    notification: '#E5655A',
+    primary: palette.gold,
+    background: palette.brown,
+    card: palette.brownSurface,
+    text: palette.cream,
+    border: palette.brownBorder,
+    notification: palette.danger,
   },
 };
+
+export const TITLE_FONT = 'MajorMonoDisplay_400Regular';

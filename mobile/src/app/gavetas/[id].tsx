@@ -18,9 +18,9 @@ import {
 } from '@/db/packs';
 import { createStickerFile, deletePackFiles, deleteStickerFile } from '@/stickers/sticker-files';
 import { sendPackToWhatsApp } from '@/stickers/whatsapp-export';
+import { palette } from '@/theme/colors';
 
 const GRID_COLUMNS = 3;
-const WHATSAPP_GREEN = '#25D366';
 
 export default function PackScreen() {
   const { colors } = useTheme();
@@ -205,7 +205,7 @@ export default function PackScreen() {
             accessibilityState={{ disabled: missingForWhatsApp > 0 || sending }}
             style={[
               styles.primaryButton,
-              { backgroundColor: WHATSAPP_GREEN, opacity: missingForWhatsApp > 0 || sending ? 0.4 : 1 },
+              { backgroundColor: palette.whatsapp, opacity: missingForWhatsApp > 0 || sending ? 0.4 : 1 },
             ]}
           >
             <Text style={styles.primaryButtonText}>{sending ? 'Preparando...' : 'Mandar pro WhatsApp'}</Text>
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   primaryButtonText: {
-    color: '#1E2430',
+    color: palette.brown,
     fontSize: 16,
     fontWeight: '700',
   },
