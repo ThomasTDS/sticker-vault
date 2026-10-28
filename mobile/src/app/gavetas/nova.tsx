@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { createPack, PACK_NAME_MAX_LENGTH, PACK_PUBLISHER_MAX_LENGTH } from '@/db/packs';
+import { palette } from '@/theme/colors';
 
 export default function NewPackScreen() {
   const { colors } = useTheme();
@@ -38,7 +39,7 @@ export default function NewPackScreen() {
           onChangeText={setName}
           maxLength={PACK_NAME_MAX_LENGTH}
           placeholder="Ex.: Reações do grupo"
-          placeholderTextColor={colors.border}
+          placeholderTextColor={palette.creamMuted}
           style={inputStyle}
         />
         {showErrors && nameMissing && (
@@ -56,7 +57,7 @@ export default function NewPackScreen() {
           onChangeText={setPublisher}
           maxLength={PACK_PUBLISHER_MAX_LENGTH}
           placeholder="Ex.: Seu nome"
-          placeholderTextColor={colors.border}
+          placeholderTextColor={palette.creamMuted}
           style={inputStyle}
         />
         {showErrors && publisherMissing && (
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   primaryButtonText: {
-    color: '#1E2430',
+    color: palette.brown,
     fontSize: 16,
     fontWeight: '700',
   },

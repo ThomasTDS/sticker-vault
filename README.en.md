@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="mobile/assets/images/brand/logo-source.png" alt="Sticker Vault logo" width="260" />
+</p>
+
 # Sticker Vault
 
 [Português](README.md) | **English**
@@ -39,6 +43,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Most used:** the stickers shared most from the app show up on a home screen shelf, with their share count.
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
+- **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
 
 ## Tech stack

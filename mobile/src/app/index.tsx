@@ -15,6 +15,7 @@ import {
   type Pack,
   type StickerSearchResult,
 } from '@/db/packs';
+import { palette, TITLE_FONT } from '@/theme/colors';
 
 const RESULT_COLUMNS = 3;
 
@@ -41,10 +42,14 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text testID="home-title" style={[styles.title, { color: colors.text }]}>
-          Sticker Vault
-        </Text>
-        <Text testID="home-subtitle" style={[styles.subtitle, { color: colors.text }]}>
+        <View style={styles.titleRow}>
+          <Image source={require('../../assets/images/logo-symbol.png')} style={styles.logo} contentFit="contain" />
+          <Text testID="home-title" style={[styles.title, { color: colors.text }]}>
+            Sticker Vault
+          </Text>
+        </View>
+        <View style={styles.divider} />
+        <Text testID="home-subtitle" style={styles.subtitle}>
           Suas figurinhas guardadas e prontas para o WhatsApp.
         </Text>
         {packs.length > 0 && (
@@ -53,7 +58,7 @@ export default function HomeScreen() {
             value={query}
             onChangeText={setQuery}
             placeholder="Buscar por emoji, tag ou gaveta"
-            placeholderTextColor={colors.border}
+            placeholderTextColor={palette.creamMuted}
             autoCapitalize="none"
             style={[
               styles.searchInput,
@@ -161,13 +166,27 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     gap: 8,
   },
+  logo: {
+    width: 56,
+    height: 56,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontFamily: TITLE_FONT,
+    fontSize: 26,
   },
   subtitle: {
+    color: palette.creamMuted,
     fontSize: 16,
-    opacity: 0.7,
+  },
+  divider: {
+    backgroundColor: palette.goldDeep,
+    height: 1,
+    marginTop: 4,
   },
   searchInput: {
     borderWidth: 1,
@@ -246,7 +265,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   primaryButtonText: {
-    color: '#1E2430',
+    color: palette.brown,
     fontSize: 16,
     fontWeight: '700',
   },
