@@ -18,16 +18,37 @@ class StickerPage extends BasePage {
     return this.byTestId('sticker-tags-input');
   }
 
+  get favoriteButton() {
+    return this.byTestId('sticker-favorite-button');
+  }
+
+  get favoriteButtonLabel() {
+    return this.favoriteButton.$('android.widget.TextView');
+  }
+
+  get shareButton() {
+    return this.byTestId('sticker-share-button');
+  }
+
+  get useCount() {
+    return this.byTestId('sticker-use-count');
+  }
+
   get saveButton() {
     return this.byTestId('sticker-save-button');
   }
 
+  // The screen scrolls; UiScrollable brings the element into view before it is used.
+  private scrollTo(target: string) {
+    return $(`android=new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${target})`);
+  }
+
   emojiOption(emoji: string) {
-    return $(`android=new UiSelector().className("android.widget.TextView").text("${emoji}")`);
+    return this.scrollTo(`new UiSelector().className("android.widget.TextView").text("${emoji}")`);
   }
 
   async waitForScreen() {
-    await this.saveButton.waitForDisplayed();
+    await this.favoriteButton.waitForDisplayed();
   }
 
   async chooseEmojis(emojis: string[]) {
@@ -36,8 +57,12 @@ class StickerPage extends BasePage {
     }
   }
 
+  async fillTags(text: string) {
+    await this.scrollTo('new UiSelector().resourceId("sticker-tags-input")').setValue(text);
+  }
+
   async save() {
-    await this.saveButton.click();
+    await this.scrollTo('new UiSelector().resourceId("sticker-save-button")').click();
   }
 }
 
