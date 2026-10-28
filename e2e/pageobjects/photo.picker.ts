@@ -23,6 +23,12 @@ class PhotoPicker {
     });
     await this.addButton.click();
   }
+
+  // In single-selection mode the picker closes as soon as a photo is tapped.
+  async selectNewestSingle() {
+    await this.thumbnails[0].waitForDisplayed();
+    await this.thumbnails[0].click();
+  }
 }
 
 export default new PhotoPicker();

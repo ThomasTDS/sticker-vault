@@ -210,13 +210,31 @@ export default function PackScreen() {
           >
             <Text style={styles.primaryButtonText}>{sending ? 'Preparando...' : 'Mandar pro WhatsApp'}</Text>
           </Pressable>
-          <Pressable
-            testID="pack-add-stickers-button"
-            onPress={handleAddFromGallery}
-            style={[styles.primaryButton, { backgroundColor: colors.primary }]}
-          >
-            <Text style={styles.primaryButtonText}>Adicionar da galeria</Text>
-          </Pressable>
+          <View style={styles.actionRow}>
+            <Pressable
+              testID="pack-add-stickers-button"
+              onPress={handleAddFromGallery}
+              style={[styles.primaryButton, styles.actionRowButton, { backgroundColor: colors.primary }]}
+            >
+              <Text style={styles.primaryButtonText}>Da galeria</Text>
+            </Pressable>
+            <Pressable
+              testID="pack-create-sticker-button"
+              onPress={() =>
+                remaining > 0
+                  ? router.push({ pathname: '/criar/[packId]', params: { packId } })
+                  : Alert.alert('Gaveta cheia', `Cada gaveta guarda até ${PACK_MAX_STICKERS} figurinhas.`)
+              }
+              style={[
+                styles.primaryButton,
+                styles.actionRowButton,
+                styles.outlineButton,
+                { borderColor: palette.gold },
+              ]}
+            >
+              <Text style={[styles.primaryButtonText, { color: palette.goldLight }]}>Criar figurinha</Text>
+            </Pressable>
+          </View>
           <Pressable testID="pack-delete-button" onPress={handleDeletePack} style={styles.secondaryButton}>
             <Text style={[styles.secondaryButtonText, { color: colors.notification }]}>Excluir gaveta</Text>
           </Pressable>
@@ -303,6 +321,17 @@ const styles = StyleSheet.create({
     color: palette.brown,
     fontSize: 16,
     fontWeight: '700',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionRowButton: {
+    flex: 1,
+  },
+  outlineButton: {
+    borderWidth: 2,
+    paddingVertical: 14,
   },
   secondaryButton: {
     alignItems: 'center',
