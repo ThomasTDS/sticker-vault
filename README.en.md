@@ -22,7 +22,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 
 ## Status
 
-In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. Stickers can also be tagged with emojis and keywords and searched within the vault. The next step is favorite and most-used stickers.
+In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. Stickers can also be tagged with emojis and keywords and searched within the vault. Favorite and most-shared stickers are one tap away on the home screen. The next step is the sticker maker.
 
 ## Features
 
@@ -34,6 +34,9 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **WhatsApp limits:** 3 to 30 stickers per drawer; the app shows how many are missing to reach the minimum and blocks additions above the maximum.
 - **Emojis and tags:** tap a sticker to pick up to 3 emojis (used by WhatsApp to suggest the sticker) and add comma-separated tags.
 - **Search:** on the home screen, find stickers by emoji, tag or drawer name, ignoring case and accents.
+- **Favorites:** mark stickers as favorites to see them on their own shelf on the home screen.
+- **Single-sticker sharing:** send one sticker through the Android share sheet.
+- **Most used:** the stickers shared most from the app show up on a home screen shelf, with their share count.
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
@@ -42,7 +45,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 
 | Layer | Technologies |
 | --- | --- |
-| App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator |
+| App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing |
 | Tests | WebdriverIO 10, Appium 3, UiAutomator2 driver, Cucumber (BDD), TypeScript |
 | Platform | Android (distributed directly as an APK, no app store) |
 
@@ -52,6 +55,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 sticker-vault/
 ├── mobile/                  # React Native app (Expo)
 │   ├── src/app/             # Screens (Expo Router routes)
+│   ├── src/components/      # Reusable UI components
 │   ├── src/db/              # Local database (SQLite) and queries
 │   ├── src/stickers/        # Sticker file conversion and storage
 │   ├── src/theme/           # Light and dark theme colors
@@ -196,6 +200,7 @@ Current coverage:
 | Drawers | Create a drawer; drawer shows up on the home screen; required name and author validation; delete a drawer |
 | Gallery stickers | Add stickers; reach the WhatsApp minimum; remove a sticker |
 | Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
+| Favorites and most used | Mark a favorite; unmark a favorite; share through Android; most-used ordering |
 | Emojis, tags and search | Pick emojis; 3-emoji limit; search by tag ignoring case and accents; search by emoji; search by drawer name; search with no results |
 
 The sending scenarios run on an emulator without WhatsApp. The confirmation inside WhatsApp is validated manually on a real device:
@@ -264,7 +269,6 @@ Funcionalidade: Tela inicial
 
 ## Next steps
 
-- Favorite and most-used stickers.
 - Sticker maker with automatic background removal and text.
 - Sharing drawers via QR code or file.
 - Running the tests in continuous integration (GitHub Actions).

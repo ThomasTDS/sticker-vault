@@ -22,6 +22,8 @@ export type Sticker = {
   createdAt: number;
   emojis: string[];
   tags: string[];
+  favorite: boolean;
+  useCount: number;
 };
 
 export type StickerSearchResult = Sticker & { packName: string };
@@ -41,9 +43,20 @@ type StickerRow = {
   created_at: number;
   emojis: string;
   tags: string;
+  favorite: number;
+  use_count: number;
 };
 
-const STICKER_COLUMNS = 'id, pack_id, file_uri, created_at, emojis, tags';
+type StickerWithPackRow = StickerRow & { pack_name: string };
+
+const STICKER_COLUMNS = 'id, pack_id, file_uri, created_at, emojis, tags, favorite, use_count';
+
+const STICKER_WITH_PACK_SELECT = `
+  SELECT s.id, s.pack_id, s.file_uri, s.created_at, s.emojis, s.tags, s.favorite, s.use_count, p.name AS pack_name
+  FROM stickers s JOIN packs p ON p.id = s.pack_id
+`;
+
+export const HOME_SECTION_LIMIT = 10;
 
 const PACK_SELECT = `
   SELECT p.id, p.name, p.publisher, p.created_at, COUNT(s.id) AS sticker_count
@@ -69,7 +82,13 @@ function toSticker(row: StickerRow): Sticker {
     createdAt: row.created_at,
     emojis: JSON.parse(row.emojis),
     tags: JSON.parse(row.tags),
+    favorite: row.favorite === 1,
+    useCount: row.use_count,
   };
+}
+
+function toSearchResult(row: StickerWithPackRow): StickerSearchResult {
+  return { ...toSticker(row), packName: row.pack_name };
 }
 
 // Lowercase and without accents, so "Bom Dia" matches "bom dia" and "reação" matches "reacao".
@@ -78,7 +97,10 @@ export function normalizeSearchText(text: string) {
 }
 
 export function parseTags(text: string) {
-  const tags = text.split(',').map((tag) => tag.trim()).filter((tag) => tag.length > 0);
+  const tags = text
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
   return [...new Set(tags)];
 }
 
@@ -135,14 +157,10 @@ export async function searchStickers(db: SQLiteDatabase, query: string): Promise
     return [];
   }
 
-  const rows = await db.getAllAsync<StickerRow & { pack_name: string }>(
-    `SELECT s.id, s.pack_id, s.file_uri, s.created_at, s.emojis, s.tags, p.name AS pack_name
-     FROM stickers s JOIN packs p ON p.id = s.pack_id
-     ORDER BY p.created_at DESC, s.id`,
-  );
+  const rows = await db.getAllAsync<StickerWithPackRow>(`${STICKER_WITH_PACK_SELECT} ORDER BY p.created_at DESC, s.id`);
 
   return rows
-    .map((row) => ({ ...toSticker(row), packName: row.pack_name }))
+    .map(toSearchResult)
     .filter(
       (sticker) =>
         sticker.emojis.some((emoji) => normalizedQuery.includes(emoji)) ||
@@ -162,4 +180,28 @@ export async function addSticker(db: SQLiteDatabase, packId: number, fileUri: st
 
 export async function deleteSticker(db: SQLiteDatabase, id: number): Promise<void> {
   await db.runAsync('DELETE FROM stickers WHERE id = ?', id);
+}
+
+export async function setStickerFavorite(db: SQLiteDatabase, id: number, favorite: boolean) {
+  await db.runAsync('UPDATE stickers SET favorite = ? WHERE id = ?', favorite ? 1 : 0, id);
+}
+
+export async function registerStickerUse(db: SQLiteDatabase, id: number) {
+  await db.runAsync('UPDATE stickers SET use_count = use_count + 1, last_used_at = ? WHERE id = ?', Date.now(), id);
+}
+
+export async function listFavoriteStickers(db: SQLiteDatabase): Promise<StickerSearchResult[]> {
+  const rows = await db.getAllAsync<StickerWithPackRow>(
+    `${STICKER_WITH_PACK_SELECT} WHERE s.favorite = 1 ORDER BY s.id DESC LIMIT ?`,
+    HOME_SECTION_LIMIT,
+  );
+  return rows.map(toSearchResult);
+}
+
+export async function listMostUsedStickers(db: SQLiteDatabase): Promise<StickerSearchResult[]> {
+  const rows = await db.getAllAsync<StickerWithPackRow>(
+    `${STICKER_WITH_PACK_SELECT} WHERE s.use_count > 0 ORDER BY s.use_count DESC, s.last_used_at DESC LIMIT ?`,
+    HOME_SECTION_LIMIT,
+  );
+  return rows.map(toSearchResult);
 }

@@ -27,7 +27,7 @@ When('salvo a figurinha', async () => {
 
 Given('que a figurinha {int} da gaveta tem a tag {string}', async (position: number, tag: string) => {
   await openSticker(position);
-  await StickerPage.tagsInput.setValue(tag);
+  await StickerPage.fillTags(tag);
   await StickerPage.save();
   await PackPage.waitForScreen();
 });

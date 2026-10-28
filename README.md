@@ -22,7 +22,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 
 ## Status
 
-Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. Também é possível classificar as figurinhas com emojis e tags e buscá-las no cofre. A próxima etapa são as figurinhas favoritas e mais usadas.
+Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. Também é possível classificar as figurinhas com emojis e tags e buscá-las no cofre. As figurinhas favoritas e as mais compartilhadas ficam à mão na tela inicial. A próxima etapa é o criador de figurinhas.
 
 ## Funcionalidades
 
@@ -34,6 +34,9 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Limites do WhatsApp:** de 3 a 30 figurinhas por gaveta; o app avisa quantas faltam para o mínimo e bloqueia acima do máximo.
 - **Emojis e tags:** ao tocar numa figurinha, escolha até 3 emojis (usados pelo WhatsApp para sugerir a figurinha) e adicione tags separadas por vírgula.
 - **Busca:** na tela inicial, encontre figurinhas por emoji, tag ou nome da gaveta, sem diferenciar maiúsculas e acentos.
+- **Favoritas:** marque figurinhas como favoritas para vê-las numa prateleira própria na tela inicial.
+- **Compartilhamento avulso:** mande uma figurinha sozinha pelo menu de compartilhamento do Android.
+- **Mais usadas:** as figurinhas mais compartilhadas pelo app aparecem numa prateleira da tela inicial, com a quantidade de compartilhamentos.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
 - **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
@@ -42,7 +45,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 
 | Camada | Tecnologias |
 | --- | --- |
-| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator |
+| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing |
 | Testes | WebdriverIO 10, Appium 3, driver UiAutomator2, Cucumber (BDD), TypeScript |
 | Plataforma | Android (distribuição direta por APK, sem loja) |
 
@@ -52,6 +55,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 sticker-vault/
 ├── mobile/                  # Aplicativo React Native (Expo)
 │   ├── src/app/             # Telas (rotas do Expo Router)
+│   ├── src/components/      # Componentes reutilizáveis de interface
 │   ├── src/db/              # Banco de dados local (SQLite) e consultas
 │   ├── src/stickers/        # Conversão e armazenamento dos arquivos das figurinhas
 │   ├── src/theme/           # Cores dos temas claro e escuro
@@ -196,6 +200,7 @@ Cobertura atual:
 | Gavetas | Criar gaveta; gaveta aparece na tela inicial; validação de nome e autor obrigatórios; excluir gaveta |
 | Figurinhas da galeria | Adicionar figurinhas; completar o mínimo para o WhatsApp; remover figurinha |
 | Envio para o WhatsApp | Envio bloqueado abaixo do mínimo; envio liberado com 3 figurinhas; aviso de WhatsApp não instalado |
+| Favoritas e mais usadas | Favoritar; desfazer favorita; compartilhar pelo Android; ordenação das mais usadas |
 | Emojis, tags e busca | Escolher emojis; limite de 3 emojis; busca por tag ignorando maiúsculas e acentos; busca por emoji; busca pelo nome da gaveta; busca sem resultados |
 
 Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentro do WhatsApp é validada manualmente em um aparelho real:
@@ -264,7 +269,6 @@ Funcionalidade: Tela inicial
 
 ## Próximos passos
 
-- Figurinhas favoritas e mais usadas.
 - Criador de figurinhas com recorte automático de fundo e texto.
 - Compartilhamento de gavetas por QR code ou arquivo.
 - Execução dos testes em integração contínua (GitHub Actions).
