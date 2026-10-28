@@ -11,10 +11,6 @@ desktop.ini
 .idea/
 *.swp
 
-# Assistentes locais
-.claude/
-CLAUDE.md
-
 # Variáveis de ambiente
 .env
 .env.*
