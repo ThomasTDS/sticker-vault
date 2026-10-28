@@ -22,6 +22,7 @@ export default function RootLayout() {
           <Stack.Screen name="gavetas/nova" options={{ title: 'Nova gaveta' }} />
           <Stack.Screen name="gavetas/[id]" options={{ title: '' }} />
           <Stack.Screen name="figurinhas/[id]" options={{ title: 'Figurinha' }} />
+          <Stack.Screen name="criar/[packId]" options={{ title: 'Criar figurinha' }} />
         </Stack>
       </SQLiteProvider>
     </ThemeProvider>

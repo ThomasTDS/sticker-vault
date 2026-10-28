@@ -26,7 +26,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 
 ## Status
 
-In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. Stickers can also be tagged with emojis and keywords and searched within the vault. Favorite and most-shared stickers are one tap away on the home screen. The next step is the sticker maker.
+In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. Stickers can also be tagged with emojis and keywords and searched within the vault. Favorite and most-shared stickers are one tap away on the home screen. Stickers can also be created within the app, with automatic background removal and meme-style text. The next step is sharing drawers between friends.
 
 ## Features
 
@@ -43,6 +43,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Most used:** the stickers shared most from the app show up on a home screen shelf, with their share count.
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
+- **Sticker maker:** pick a photo, remove the background automatically (ML Kit, processed on the device) and add top and bottom captions, with a live preview.
 - **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
 
@@ -50,7 +51,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 
 | Layer | Technologies |
 | --- | --- |
-| App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing |
+| App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, ML Kit (Kotlin) |
 | Tests | WebdriverIO 10, Appium 3, UiAutomator2 driver, Cucumber (BDD), TypeScript |
 | Platform | Android (distributed directly as an APK, no app store) |
 
@@ -206,6 +207,7 @@ Current coverage:
 | Gallery stickers | Add stickers; reach the WhatsApp minimum; remove a sticker |
 | Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
 | Favorites and most used | Mark a favorite; unmark a favorite; share through Android; most-used ordering |
+| Sticker maker | Saving blocked without a photo; sticker with meme-style captions; remove and restore the background (`@modelo-ml`) |
 | Emojis, tags and search | Pick emojis; 3-emoji limit; search by tag ignoring case and accents; search by emoji; search by drawer name; search with no results |
 
 The sending scenarios run on an emulator without WhatsApp. The confirmation inside WhatsApp is validated manually on a real device:
@@ -214,6 +216,14 @@ The sending scenarios run on an emulator without WhatsApp. The confirmation insi
 2. Create a drawer with at least 3 stickers.
 3. Tap "Mandar pro WhatsApp" and confirm with "Add".
 4. In WhatsApp, open the sticker panel and check that the drawer shows up with its icon and stickers.
+
+The background removal scenario needs the ML Kit model, which Google Play services only downloads on devices with a Google account. That is why it is tagged `@modelo-ml` and excluded from the default run. To run it on a device with the model available:
+
+```powershell
+npm run test:modelo-ml
+```
+
+When a step fails, a screenshot of the device is saved to `e2e/reports/screenshots/`.
 
 To run a single feature:
 
@@ -274,7 +284,6 @@ Funcionalidade: Tela inicial
 
 ## Next steps
 
-- Sticker maker with automatic background removal and text.
 - Sharing drawers via QR code or file.
 - Running the tests in continuous integration (GitHub Actions).
 

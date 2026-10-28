@@ -29,6 +29,10 @@ class PackPage extends BasePage {
     return this.byTestId('pack-send-whatsapp-button');
   }
 
+  get createStickerButton() {
+    return this.byTestId('pack-create-sticker-button');
+  }
+
   get deleteButton() {
     return this.byTestId('pack-delete-button');
   }
