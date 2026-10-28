@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "wdio run ./wdio.conf.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:modelo-ml": "wdio run ./wdio.conf.ts --cucumberOpts.tags=@modelo-ml"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

@@ -1,3 +1,5 @@
+import { browser } from '@wdio/globals';
+import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const apkPath =
@@ -37,5 +39,18 @@ export const config: WebdriverIO.Config = {
   cucumberOpts: {
     require: ['./step-definitions/**/*.ts'],
     timeout: 60000,
+    // @modelo-ml needs the ML Kit model, downloaded by Google Play services only on devices with a Google account.
+    tags: 'not @modelo-ml',
+  },
+
+  // Saves a screenshot of the device whenever a step fails, to help diagnose the failure.
+  afterStep: async (step, scenario, result) => {
+    if (result.passed) {
+      return;
+    }
+    const directory = path.resolve(import.meta.dirname, 'reports/screenshots');
+    await mkdir(directory, { recursive: true });
+    const name = `${scenario.name}-${step.text}`.replace(/[^\p{L}\p{N}]+/gu, '-').slice(0, 120);
+    await browser.saveScreenshot(path.join(directory, `${Date.now()}-${name}.png`));
   },
 };
