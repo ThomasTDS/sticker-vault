@@ -17,6 +17,31 @@ class HomePage extends BasePage {
     return this.byTestId('home-empty-message');
   }
 
+  get emptyStateHint() {
+    return this.byTestId('home-empty-hint');
+  }
+
+  get newPackButton() {
+    return this.byTestId('home-new-pack-button');
+  }
+
+  packNameAt(index: number) {
+    return this.byTestId(`home-pack-name-${index}`);
+  }
+
+  packCountAt(index: number) {
+    return this.byTestId(`home-pack-count-${index}`);
+  }
+
+  async findPackIndex(name: string) {
+    const names = await this.allByTestIdPattern('home-pack-name-\\d+').map((element) => element.getText());
+    const index = names.indexOf(name);
+    if (index === -1) {
+      throw new Error(`Pack "${name}" not found on the home screen`);
+    }
+    return index;
+  }
+
   async waitForScreen() {
     await this.title.waitForDisplayed({ timeout: 30000 });
   }

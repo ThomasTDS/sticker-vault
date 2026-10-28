@@ -20,6 +20,7 @@ export const config: WebdriverIO.Config = {
       'appium:enforceAppInstall': true,
       'appium:autoGrantPermissions': true,
       'appium:newCommandTimeout': 240,
+      'appium:adbExecTimeout': 60000,
     },
   ],
 
