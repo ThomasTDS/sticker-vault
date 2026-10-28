@@ -24,6 +24,6 @@ When('eu removo a primeira figurinha', async () => {
   await AlertDialog.choose('Remover');
 });
 
-Then('devo ver {int} figurinhas na gaveta', async (count: number) => {
+Then('devo ver {int} figurinha(s) na gaveta', async (count: number) => {
   await expect(PackPage.stickers).toBeElementsArrayOfSize(count);
 });

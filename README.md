@@ -26,7 +26,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 
 ## Status
 
-Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. Também é possível classificar as figurinhas com emojis e tags e buscá-las no cofre. As figurinhas favoritas e as mais compartilhadas ficam à mão na tela inicial. A próxima etapa é o criador de figurinhas.
+Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. Também é possível classificar as figurinhas com emojis e tags e buscá-las no cofre. As figurinhas favoritas e as mais compartilhadas ficam à mão na tela inicial. Também é possível criar figurinhas no próprio app, com recorte automático do fundo e texto estilo meme. A próxima etapa é o compartilhamento de gavetas entre amigos.
 
 ## Funcionalidades
 
@@ -43,6 +43,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Mais usadas:** as figurinhas mais compartilhadas pelo app aparecem numa prateleira da tela inicial, com a quantidade de compartilhamentos.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
+- **Criador de figurinhas:** escolha uma foto, remova o fundo automaticamente (ML Kit, processado no próprio aparelho) e escreva textos em cima e embaixo, com prévia ao vivo.
 - **Identidade visual:** tema escuro com fundo marrom, textos em creme, detalhes em dourado e o título na fonte Major Mono Display.
 - **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
 
@@ -50,7 +51,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 
 | Camada | Tecnologias |
 | --- | --- |
-| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing |
+| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, ML Kit (Kotlin) |
 | Testes | WebdriverIO 10, Appium 3, driver UiAutomator2, Cucumber (BDD), TypeScript |
 | Plataforma | Android (distribuição direta por APK, sem loja) |
 
@@ -206,6 +207,7 @@ Cobertura atual:
 | Figurinhas da galeria | Adicionar figurinhas; completar o mínimo para o WhatsApp; remover figurinha |
 | Envio para o WhatsApp | Envio bloqueado abaixo do mínimo; envio liberado com 3 figurinhas; aviso de WhatsApp não instalado |
 | Favoritas e mais usadas | Favoritar; desfazer favorita; compartilhar pelo Android; ordenação das mais usadas |
+| Criador de figurinhas | Salvamento bloqueado sem foto; figurinha com texto estilo meme; remover e restaurar o fundo (`@modelo-ml`) |
 | Emojis, tags e busca | Escolher emojis; limite de 3 emojis; busca por tag ignorando maiúsculas e acentos; busca por emoji; busca pelo nome da gaveta; busca sem resultados |
 
 Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentro do WhatsApp é validada manualmente em um aparelho real:
@@ -214,6 +216,14 @@ Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentr
 2. Crie uma gaveta com pelo menos 3 figurinhas.
 3. Toque em "Mandar pro WhatsApp" e confirme em "Adicionar".
 4. No WhatsApp, abra o painel de figurinhas e confira se a gaveta aparece com o ícone e as figurinhas.
+
+O cenário de remoção de fundo precisa do modelo do ML Kit, que o Google Play Services só baixa em aparelhos com conta Google. Por isso ele tem a tag `@modelo-ml` e fica fora da execução padrão. Para rodá-lo em um aparelho com o modelo disponível:
+
+```powershell
+npm run test:modelo-ml
+```
+
+Quando um passo falha, uma captura da tela do aparelho é salva em `e2e/reports/screenshots/`.
 
 Para executar apenas uma funcionalidade:
 
@@ -274,7 +284,6 @@ Funcionalidade: Tela inicial
 
 ## Próximos passos
 
-- Criador de figurinhas com recorte automático de fundo e texto.
 - Compartilhamento de gavetas por QR code ou arquivo.
 - Execução dos testes em integração contínua (GitHub Actions).
 
