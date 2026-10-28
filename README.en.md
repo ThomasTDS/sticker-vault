@@ -22,7 +22,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 
 ## Status
 
-In development. You can already create drawers (sticker packs) and store stickers imported from the gallery. The next step is sending packs to WhatsApp.
+In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. The next step is searching stickers by emoji and tag.
 
 ## Features
 
@@ -33,6 +33,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **WhatsApp format:** each image is cropped to a square, resized to 512x512 and saved as WebP of up to 100 KB.
 - **WhatsApp limits:** 3 to 30 stickers per drawer; the app shows how many are missing to reach the minimum and blocks additions above the maximum.
 - **Removing stickers:** long-press a sticker.
+- **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
 
 ## Tech stack
@@ -52,6 +53,7 @@ sticker-vault/
 │   ├── src/db/              # Local database (SQLite) and queries
 │   ├── src/stickers/        # Sticker file conversion and storage
 │   ├── src/theme/           # Light and dark theme colors
+│   ├── modules/             # Local native modules (Kotlin), such as the WhatsApp integration
 │   ├── plugins/             # Expo config plugins for native adjustments
 │   └── app.json             # App configuration
 └── e2e/                     # End-to-end tests (Appium + WebdriverIO)
@@ -191,6 +193,14 @@ Current coverage:
 | Home screen | Empty vault on first launch |
 | Drawers | Create a drawer; drawer shows up on the home screen; required name and author validation; delete a drawer |
 | Gallery stickers | Add stickers; reach the WhatsApp minimum; remove a sticker |
+| Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
+
+The sending scenarios run on an emulator without WhatsApp. The confirmation inside WhatsApp is validated manually on a real device:
+
+1. Install the release APK on the phone (`adb install -r` with USB debugging enabled, or by copying the file to the device).
+2. Create a drawer with at least 3 stickers.
+3. Tap "Mandar pro WhatsApp" and confirm with "Add".
+4. In WhatsApp, open the sticker panel and check that the drawer shows up with its icon and stickers.
 
 To run a single feature:
 
@@ -251,7 +261,6 @@ Funcionalidade: Tela inicial
 
 ## Next steps
 
-- Sending drawers to WhatsApp through a native Kotlin module.
 - Searching stickers by emoji and tag.
 - Favorite and most-used stickers.
 - Sticker maker with automatic background removal and text.

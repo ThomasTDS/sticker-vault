@@ -17,8 +17,10 @@ import {
   type Sticker,
 } from '@/db/packs';
 import { createStickerFile, deletePackFiles, deleteStickerFile } from '@/stickers/sticker-files';
+import { sendPackToWhatsApp } from '@/stickers/whatsapp-export';
 
 const GRID_COLUMNS = 3;
+const WHATSAPP_GREEN = '#25D366';
 
 export default function PackScreen() {
   const { colors } = useTheme();
@@ -28,6 +30,7 @@ export default function PackScreen() {
   const [pack, setPack] = useState<Pack | null>(null);
   const [stickers, setStickers] = useState<Sticker[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const load = useCallback(async () => {
     const [loadedPack, loadedStickers] = await Promise.all([getPack(db, packId), listStickers(db, packId)]);
@@ -71,6 +74,27 @@ export default function PackScreen() {
     } finally {
       setProcessing(false);
       await load();
+    }
+  }
+
+  async function handleSendToWhatsApp() {
+    if (!pack) {
+      return;
+    }
+    setSending(true);
+    try {
+      const result = await sendPackToWhatsApp(db, pack.id, pack.name);
+      if (result.status === 'added') {
+        Alert.alert('Prontinho!', `A gaveta "${pack.name}" já está no seu WhatsApp.`);
+      } else if (result.status === 'not_installed') {
+        Alert.alert('Cadê o WhatsApp?', 'Instale o WhatsApp neste celular para mandar suas figurinhas.');
+      } else if (result.status === 'error') {
+        Alert.alert('O WhatsApp recusou a gaveta', result.message);
+      }
+    } catch {
+      Alert.alert('Ops!', 'Não deu pra preparar a gaveta pro WhatsApp. Tenta de novo?');
+    } finally {
+      setSending(false);
     }
   }
 
@@ -164,6 +188,18 @@ export default function PackScreen() {
       ) : (
         <View style={styles.actions}>
           <Pressable
+            testID="pack-send-whatsapp-button"
+            onPress={handleSendToWhatsApp}
+            disabled={missingForWhatsApp > 0 || sending}
+            accessibilityState={{ disabled: missingForWhatsApp > 0 || sending }}
+            style={[
+              styles.primaryButton,
+              { backgroundColor: WHATSAPP_GREEN, opacity: missingForWhatsApp > 0 || sending ? 0.4 : 1 },
+            ]}
+          >
+            <Text style={styles.primaryButtonText}>{sending ? 'Preparando...' : 'Mandar pro WhatsApp'}</Text>
+          </Pressable>
+          <Pressable
             testID="pack-add-stickers-button"
             onPress={handleAddFromGallery}
             style={[styles.primaryButton, { backgroundColor: colors.primary }]}
@@ -238,7 +274,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   actions: {
-    gap: 4,
+    gap: 10,
     paddingBottom: 24,
   },
   primaryButton: {
