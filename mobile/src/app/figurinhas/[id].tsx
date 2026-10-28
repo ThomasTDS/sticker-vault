@@ -1,10 +1,19 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams, useTheme } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { getSticker, parseTags, STICKER_MAX_EMOJIS, updateStickerDetails, type Sticker } from '@/db/packs';
+import {
+  getSticker,
+  parseTags,
+  registerStickerUse,
+  setStickerFavorite,
+  STICKER_MAX_EMOJIS,
+  updateStickerDetails,
+  type Sticker,
+} from '@/db/packs';
 import { EMOJI_OPTIONS } from '@/stickers/emojis';
 
 export default function StickerScreen() {
@@ -26,6 +35,29 @@ export default function StickerScreen() {
   }, [db, stickerId]);
 
   const limitReached = emojis.length >= STICKER_MAX_EMOJIS;
+
+  async function handleToggleFavorite() {
+    if (!sticker) {
+      return;
+    }
+    const favorite = !sticker.favorite;
+    await setStickerFavorite(db, sticker.id, favorite);
+    setSticker({ ...sticker, favorite });
+  }
+
+  // Counts as a use when the share sheet opens; Android does not report which app received it.
+  async function handleShare() {
+    if (!sticker) {
+      return;
+    }
+    if (!(await Sharing.isAvailableAsync())) {
+      Alert.alert('Ops!', 'Este celular não permite compartilhar arquivos.');
+      return;
+    }
+    await registerStickerUse(db, sticker.id);
+    setSticker({ ...sticker, useCount: sticker.useCount + 1 });
+    await Sharing.shareAsync(sticker.fileUri, { mimeType: 'image/webp', dialogTitle: 'Mandar figurinha' });
+  }
 
   function toggleEmoji(emoji: string) {
     if (emojis.includes(emoji)) {
@@ -52,8 +84,40 @@ export default function StickerScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={[styles.preview, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Image testID="sticker-image" source={{ uri: sticker.fileUri }} style={styles.previewImage} contentFit="contain" />
+        <Image
+          testID="sticker-image"
+          source={{ uri: sticker.fileUri }}
+          style={styles.previewImage}
+          contentFit="contain"
+        />
       </View>
+
+      <View style={styles.quickActions}>
+        <Pressable
+          testID="sticker-favorite-button"
+          onPress={handleToggleFavorite}
+          accessibilityState={{ selected: sticker.favorite }}
+          style={[styles.quickButton, { borderColor: sticker.favorite ? colors.primary : colors.border }]}
+        >
+          <Text style={[styles.quickButtonText, { color: colors.text }]}>
+            {sticker.favorite ? '★ Favorita' : '☆ Favoritar'}
+          </Text>
+        </Pressable>
+        <Pressable
+          testID="sticker-share-button"
+          onPress={handleShare}
+          style={[styles.quickButton, { borderColor: colors.border }]}
+        >
+          <Text style={[styles.quickButtonText, { color: colors.text }]}>Compartilhar</Text>
+        </Pressable>
+      </View>
+      <Text testID="sticker-use-count" style={[styles.useCount, { color: colors.text }]}>
+        {sticker.useCount === 0
+          ? 'Ainda não foi compartilhada.'
+          : sticker.useCount === 1
+            ? 'Compartilhada 1 vez.'
+            : `Compartilhada ${sticker.useCount} vezes.`}
+      </Text>
 
       <View style={styles.section}>
         <Text style={[styles.label, { color: colors.text }]}>Emojis</Text>
@@ -63,10 +127,7 @@ export default function StickerScreen() {
         >
           {emojis.length > 0 ? emojis.join(' ') : 'Nenhum emoji escolhido'}
         </Text>
-        <Text
-          testID="sticker-emoji-hint"
-          style={[styles.hint, { color: limitReached ? colors.primary : colors.text }]}
-        >
+        <Text testID="sticker-emoji-hint" style={[styles.hint, { color: limitReached ? colors.primary : colors.text }]}>
           {limitReached
             ? `Máximo de ${STICKER_MAX_EMOJIS} emojis por figurinha.`
             : 'Escolha até 3 emojis. O WhatsApp usa eles para sugerir a figurinha enquanto você digita.'}
@@ -136,6 +197,27 @@ const styles = StyleSheet.create({
   },
   previewImage: {
     flex: 1,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  quickButton: {
+    flex: 1,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  quickButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  useCount: {
+    fontSize: 13,
+    marginTop: -12,
+    opacity: 0.6,
+    textAlign: 'center',
   },
   section: {
     gap: 8,

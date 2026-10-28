@@ -2,7 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 export const DATABASE_NAME = 'sticker-vault.db';
 
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 export async function migrateDatabase(db: SQLiteDatabase) {
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
@@ -38,6 +38,15 @@ export async function migrateDatabase(db: SQLiteDatabase) {
     await db.execAsync(`
       ALTER TABLE stickers ADD COLUMN emojis TEXT NOT NULL DEFAULT '[]';
       ALTER TABLE stickers ADD COLUMN tags TEXT NOT NULL DEFAULT '[]';
+    `);
+  }
+
+  if (currentVersion < 3) {
+    // use_count counts how many times a sticker was shared from the app.
+    await db.execAsync(`
+      ALTER TABLE stickers ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE stickers ADD COLUMN use_count INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE stickers ADD COLUMN last_used_at INTEGER;
     `);
   }
 

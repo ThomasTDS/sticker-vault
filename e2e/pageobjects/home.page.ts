@@ -45,6 +45,18 @@ class HomePage extends BasePage {
     await this.searchInput.setValue(text);
   }
 
+  get favoritesSection() {
+    return this.byTestId('home-favorites');
+  }
+
+  get favoriteItems() {
+    return this.allByTestIdPattern('home-favorites-item-\\d+');
+  }
+
+  get mostUsedCounts() {
+    return this.allByTestIdPattern('home-most-used-count-\\d+');
+  }
+
   packNameAt(index: number) {
     return this.byTestId(`home-pack-name-${index}`);
   }
