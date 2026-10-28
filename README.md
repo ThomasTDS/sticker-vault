@@ -9,6 +9,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 ## Sumário
 
 - [Status](#status)
+- [Funcionalidades](#funcionalidades)
 - [Tecnologias](#tecnologias)
 - [Estrutura do repositório](#estrutura-do-repositório)
 - [Pré-requisitos](#pré-requisitos)
@@ -21,13 +22,24 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 
 ## Status
 
-Em desenvolvimento. A estrutura inicial está pronta: tela inicial do aplicativo e o primeiro cenário de teste automatizado.
+Em desenvolvimento. Já é possível criar gavetas (pacotes) e guardar figurinhas importadas da galeria. A próxima etapa é o envio dos pacotes para o WhatsApp.
+
+## Funcionalidades
+
+O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
+
+- **Gavetas:** criação com nome e autor, listagem na tela inicial e exclusão com confirmação.
+- **Importação da galeria:** seleção de várias imagens de uma vez pelo seletor de fotos do Android.
+- **Formato do WhatsApp:** cada imagem é recortada em quadrado, redimensionada para 512x512 e salva em WebP com até 100 KB.
+- **Limites do WhatsApp:** de 3 a 30 figurinhas por gaveta; o app avisa quantas faltam para o mínimo e bloqueia acima do máximo.
+- **Remoção de figurinhas:** toque longo sobre a figurinha.
+- **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
 
 ## Tecnologias
 
 | Camada | Tecnologias |
 | --- | --- |
-| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript |
+| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator |
 | Testes | WebdriverIO 10, Appium 3, driver UiAutomator2, Cucumber (BDD), TypeScript |
 | Plataforma | Android (distribuição direta por APK, sem loja) |
 
@@ -37,12 +49,17 @@ Em desenvolvimento. A estrutura inicial está pronta: tela inicial do aplicativo
 sticker-vault/
 ├── mobile/                  # Aplicativo React Native (Expo)
 │   ├── src/app/             # Telas (rotas do Expo Router)
+│   ├── src/db/              # Banco de dados local (SQLite) e consultas
+│   ├── src/stickers/        # Conversão e armazenamento dos arquivos das figurinhas
+│   ├── src/theme/           # Cores dos temas claro e escuro
 │   ├── plugins/             # Config plugins do Expo para ajustes nativos
 │   └── app.json             # Configuração do aplicativo
 └── e2e/                     # Testes de ponta a ponta (Appium + WebdriverIO)
     ├── features/            # Cenários em Gherkin (português)
     ├── step-definitions/    # Implementação dos passos dos cenários
-    ├── pageobjects/         # Page Objects (seletores e ações de cada tela)
+    ├── pageobjects/         # Page Objects (telas do app, seletor de fotos e diálogos)
+    ├── support/             # Utilitários de dispositivo (limpeza do app, envio de imagens)
+    ├── fixtures/            # Imagens usadas nos testes
     └── wdio.conf.ts         # Configuração do WebdriverIO e do Appium
 ```
 
@@ -167,6 +184,20 @@ npm test
 
 O WebdriverIO inicia o servidor do Appium automaticamente, instala o APK no dispositivo e executa os cenários de `e2e/features/`. Os logs do Appium ficam em `e2e/logs/`.
 
+Cobertura atual:
+
+| Funcionalidade | Cenários |
+| --- | --- |
+| Tela inicial | Cofre vazio na primeira abertura |
+| Gavetas | Criar gaveta; gaveta aparece na tela inicial; validação de nome e autor obrigatórios; excluir gaveta |
+| Figurinhas da galeria | Adicionar figurinhas; completar o mínimo para o WhatsApp; remover figurinha |
+
+Para executar apenas uma funcionalidade:
+
+```powershell
+npx wdio run ./wdio.conf.ts --spec ./features/gavetas.feature
+```
+
 Variáveis opcionais:
 
 | Variável | Uso | Padrão |
@@ -192,6 +223,8 @@ npm run typecheck
 - **BDD com Cucumber:** os cenários são escritos em Gherkin, em português (`# language: pt`), e servem como documentação viva do comportamento do aplicativo.
 - **Page Objects:** seletores e ações de cada tela ficam em classes próprias em `e2e/pageobjects/`; os passos apenas chamam esses métodos.
 - **Seletores estáveis:** todo elemento verificado pelos testes recebe um `testID` no aplicativo. No Android, o `testID` é exposto como `resource-id`, e o método `byTestId()` da `BasePage` localiza o elemento por ele.
+- **Cenários independentes:** antes de cada cenário, os dados do app são apagados (`mobile: clearApp`), garantindo que um teste não dependa do outro.
+- **Galeria controlada:** as imagens de `e2e/fixtures/images/` são enviadas ao emulador antes dos cenários de importação, e o seletor de fotos do sistema é automatizado por um Page Object próprio.
 - **Testes sobre o APK de release:** o JavaScript já vem embutido no APK, então os testes não dependem do servidor de desenvolvimento e validam o mesmo artefato que o usuário final instala. O APK é reinstalado a cada execução.
 
 Exemplo de cenário:
@@ -200,11 +233,11 @@ Exemplo de cenário:
 # language: pt
 Funcionalidade: Tela inicial
 
-  Cenário: Exibir a tela inicial vazia na primeira abertura
+  Cenário: Exibir o cofre vazio na primeira abertura
     Dado que o app foi aberto
     Então devo ver o título "Sticker Vault"
     E devo ver o subtítulo "Suas figurinhas guardadas e prontas para o WhatsApp."
-    E devo ver a mensagem de lista vazia "Nenhum pacote por aqui ainda."
+    E devo ver a mensagem de cofre vazio "Seu cofre tá vazio."
 ```
 
 ## Solução de problemas
@@ -218,9 +251,11 @@ Funcionalidade: Tela inicial
 
 ## Próximos passos
 
-- Cadastro e visualização de pacotes de figurinhas.
-- Integração com o WhatsApp por meio de um módulo nativo em Kotlin.
-- Criação de figurinhas pelo próprio aplicativo.
+- Envio das gavetas para o WhatsApp por meio de um módulo nativo em Kotlin.
+- Busca de figurinhas por emoji e tag.
+- Figurinhas favoritas e mais usadas.
+- Criador de figurinhas com recorte automático de fundo e texto.
+- Compartilhamento de gavetas por QR code ou arquivo.
 - Execução dos testes em integração contínua (GitHub Actions).
 
 ## Autor

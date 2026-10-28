@@ -9,6 +9,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 ## Table of contents
 
 - [Status](#status)
+- [Features](#features)
 - [Tech stack](#tech-stack)
 - [Repository structure](#repository-structure)
 - [Prerequisites](#prerequisites)
@@ -21,13 +22,24 @@ A non-profit study project with two goals: building the app and ensuring its qua
 
 ## Status
 
-In development. The initial structure is ready: the app's home screen and the first automated test scenario.
+In development. You can already create drawers (sticker packs) and store stickers imported from the gallery. The next step is sending packs to WhatsApp.
+
+## Features
+
+Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*).
+
+- **Drawers:** create them with a name and author, list them on the home screen and delete them with confirmation.
+- **Gallery import:** pick several images at once through the Android photo picker.
+- **WhatsApp format:** each image is cropped to a square, resized to 512x512 and saved as WebP of up to 100 KB.
+- **WhatsApp limits:** 3 to 30 stickers per drawer; the app shows how many are missing to reach the minimum and blocks additions above the maximum.
+- **Removing stickers:** long-press a sticker.
+- **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
 
 ## Tech stack
 
 | Layer | Technologies |
 | --- | --- |
-| App | React Native, Expo (SDK 58), Expo Router, TypeScript |
+| App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator |
 | Tests | WebdriverIO 10, Appium 3, UiAutomator2 driver, Cucumber (BDD), TypeScript |
 | Platform | Android (distributed directly as an APK, no app store) |
 
@@ -37,12 +49,17 @@ In development. The initial structure is ready: the app's home screen and the fi
 sticker-vault/
 ├── mobile/                  # React Native app (Expo)
 │   ├── src/app/             # Screens (Expo Router routes)
+│   ├── src/db/              # Local database (SQLite) and queries
+│   ├── src/stickers/        # Sticker file conversion and storage
+│   ├── src/theme/           # Light and dark theme colors
 │   ├── plugins/             # Expo config plugins for native adjustments
 │   └── app.json             # App configuration
 └── e2e/                     # End-to-end tests (Appium + WebdriverIO)
     ├── features/            # Gherkin scenarios (written in Portuguese)
     ├── step-definitions/    # Step implementations
-    ├── pageobjects/         # Page Objects (selectors and actions for each screen)
+    ├── pageobjects/         # Page Objects (app screens, photo picker and dialogs)
+    ├── support/             # Device utilities (app reset, image upload)
+    ├── fixtures/            # Images used by the tests
     └── wdio.conf.ts         # WebdriverIO and Appium configuration
 ```
 
@@ -167,6 +184,20 @@ npm test
 
 WebdriverIO starts the Appium server automatically, installs the APK on the device and runs the scenarios in `e2e/features/`. Appium logs are written to `e2e/logs/`.
 
+Current coverage:
+
+| Feature | Scenarios |
+| --- | --- |
+| Home screen | Empty vault on first launch |
+| Drawers | Create a drawer; drawer shows up on the home screen; required name and author validation; delete a drawer |
+| Gallery stickers | Add stickers; reach the WhatsApp minimum; remove a sticker |
+
+To run a single feature:
+
+```powershell
+npx wdio run ./wdio.conf.ts --spec ./features/gavetas.feature
+```
+
 Optional variables:
 
 | Variable | Purpose | Default |
@@ -192,6 +223,8 @@ npm run typecheck
 - **BDD with Cucumber:** scenarios are written in Gherkin, in Portuguese (`# language: pt`), and serve as living documentation of the app's behavior.
 - **Page Objects:** each screen's selectors and actions live in their own classes in `e2e/pageobjects/`; steps only call these methods.
 - **Stable selectors:** every element checked by the tests gets a `testID` in the app. On Android, the `testID` is exposed as the `resource-id`, and the `BasePage`'s `byTestId()` method locates elements by it.
+- **Independent scenarios:** app data is cleared before each scenario (`mobile: clearApp`), so no test depends on another.
+- **Controlled gallery:** the images in `e2e/fixtures/images/` are pushed to the emulator before the import scenarios, and the system photo picker is automated through its own Page Object.
 - **Tests against the release APK:** the JavaScript is bundled into the APK, so the tests do not depend on the development server and validate the same artifact end users install. The APK is reinstalled on every run.
 
 Sample scenario (keywords in Portuguese: *Funcionalidade* = Feature, *Cenário* = Scenario, *Dado* = Given, *Então* = Then, *E* = And):
@@ -200,11 +233,11 @@ Sample scenario (keywords in Portuguese: *Funcionalidade* = Feature, *Cenário* 
 # language: pt
 Funcionalidade: Tela inicial
 
-  Cenário: Exibir a tela inicial vazia na primeira abertura
+  Cenário: Exibir o cofre vazio na primeira abertura
     Dado que o app foi aberto
     Então devo ver o título "Sticker Vault"
     E devo ver o subtítulo "Suas figurinhas guardadas e prontas para o WhatsApp."
-    E devo ver a mensagem de lista vazia "Nenhum pacote por aqui ainda."
+    E devo ver a mensagem de cofre vazio "Seu cofre tá vazio."
 ```
 
 ## Troubleshooting
@@ -218,9 +251,11 @@ Funcionalidade: Tela inicial
 
 ## Next steps
 
-- Creating and browsing sticker packs.
-- WhatsApp integration through a native Kotlin module.
-- Creating stickers within the app.
+- Sending drawers to WhatsApp through a native Kotlin module.
+- Searching stickers by emoji and tag.
+- Favorite and most-used stickers.
+- Sticker maker with automatic background removal and text.
+- Sharing drawers via QR code or file.
 - Running the tests in continuous integration (GitHub Actions).
 
 ## Author
