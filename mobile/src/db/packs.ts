@@ -5,6 +5,7 @@ export const PACK_NAME_MAX_LENGTH = 128;
 export const PACK_PUBLISHER_MAX_LENGTH = 128;
 export const PACK_MIN_STICKERS = 3;
 export const PACK_MAX_STICKERS = 30;
+export const STICKER_MAX_EMOJIS = 3;
 
 export type Pack = {
   id: number;
@@ -19,7 +20,11 @@ export type Sticker = {
   packId: number;
   fileUri: string;
   createdAt: number;
+  emojis: string[];
+  tags: string[];
 };
+
+export type StickerSearchResult = Sticker & { packName: string };
 
 type PackRow = {
   id: number;
@@ -34,7 +39,11 @@ type StickerRow = {
   pack_id: number;
   file_uri: string;
   created_at: number;
+  emojis: string;
+  tags: string;
 };
+
+const STICKER_COLUMNS = 'id, pack_id, file_uri, created_at, emojis, tags';
 
 const PACK_SELECT = `
   SELECT p.id, p.name, p.publisher, p.created_at, COUNT(s.id) AS sticker_count
@@ -53,7 +62,24 @@ function toPack(row: PackRow): Pack {
 }
 
 function toSticker(row: StickerRow): Sticker {
-  return { id: row.id, packId: row.pack_id, fileUri: row.file_uri, createdAt: row.created_at };
+  return {
+    id: row.id,
+    packId: row.pack_id,
+    fileUri: row.file_uri,
+    createdAt: row.created_at,
+    emojis: JSON.parse(row.emojis),
+    tags: JSON.parse(row.tags),
+  };
+}
+
+// Lowercase and without accents, so "Bom Dia" matches "bom dia" and "reação" matches "reacao".
+export function normalizeSearchText(text: string) {
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
+export function parseTags(text: string) {
+  const tags = text.split(',').map((tag) => tag.trim()).filter((tag) => tag.length > 0);
+  return [...new Set(tags)];
 }
 
 export async function listPacks(db: SQLiteDatabase): Promise<Pack[]> {
@@ -82,10 +108,47 @@ export async function deletePack(db: SQLiteDatabase, id: number): Promise<void> 
 
 export async function listStickers(db: SQLiteDatabase, packId: number): Promise<Sticker[]> {
   const rows = await db.getAllAsync<StickerRow>(
-    'SELECT id, pack_id, file_uri, created_at FROM stickers WHERE pack_id = ? ORDER BY id',
+    `SELECT ${STICKER_COLUMNS} FROM stickers WHERE pack_id = ? ORDER BY id`,
     packId,
   );
   return rows.map(toSticker);
+}
+
+export async function getSticker(db: SQLiteDatabase, id: number): Promise<Sticker | null> {
+  const row = await db.getFirstAsync<StickerRow>(`SELECT ${STICKER_COLUMNS} FROM stickers WHERE id = ?`, id);
+  return row ? toSticker(row) : null;
+}
+
+export async function updateStickerDetails(db: SQLiteDatabase, id: number, emojis: string[], tags: string[]) {
+  await db.runAsync(
+    'UPDATE stickers SET emojis = ?, tags = ? WHERE id = ?',
+    JSON.stringify(emojis.slice(0, STICKER_MAX_EMOJIS)),
+    JSON.stringify(tags),
+    id,
+  );
+}
+
+// Matches the query against the sticker emojis, its tags and the name of its pack.
+export async function searchStickers(db: SQLiteDatabase, query: string): Promise<StickerSearchResult[]> {
+  const normalizedQuery = normalizeSearchText(query);
+  if (normalizedQuery.length === 0) {
+    return [];
+  }
+
+  const rows = await db.getAllAsync<StickerRow & { pack_name: string }>(
+    `SELECT s.id, s.pack_id, s.file_uri, s.created_at, s.emojis, s.tags, p.name AS pack_name
+     FROM stickers s JOIN packs p ON p.id = s.pack_id
+     ORDER BY p.created_at DESC, s.id`,
+  );
+
+  return rows
+    .map((row) => ({ ...toSticker(row), packName: row.pack_name }))
+    .filter(
+      (sticker) =>
+        sticker.emojis.some((emoji) => normalizedQuery.includes(emoji)) ||
+        sticker.tags.some((tag) => normalizeSearchText(tag).includes(normalizedQuery)) ||
+        normalizeSearchText(sticker.packName).includes(normalizedQuery),
+    );
 }
 
 export async function addSticker(db: SQLiteDatabase, packId: number, fileUri: string): Promise<void> {

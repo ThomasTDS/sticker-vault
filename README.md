@@ -22,7 +22,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 
 ## Status
 
-Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. A próxima etapa é a busca de figurinhas por emoji e tag.
+Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. Também é possível classificar as figurinhas com emojis e tags e buscá-las no cofre. A próxima etapa são as figurinhas favoritas e mais usadas.
 
 ## Funcionalidades
 
@@ -32,6 +32,8 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Importação da galeria:** seleção de várias imagens de uma vez pelo seletor de fotos do Android.
 - **Formato do WhatsApp:** cada imagem é recortada em quadrado, redimensionada para 512x512 e salva em WebP com até 100 KB.
 - **Limites do WhatsApp:** de 3 a 30 figurinhas por gaveta; o app avisa quantas faltam para o mínimo e bloqueia acima do máximo.
+- **Emojis e tags:** ao tocar numa figurinha, escolha até 3 emojis (usados pelo WhatsApp para sugerir a figurinha) e adicione tags separadas por vírgula.
+- **Busca:** na tela inicial, encontre figurinhas por emoji, tag ou nome da gaveta, sem diferenciar maiúsculas e acentos.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
 - **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
@@ -194,6 +196,7 @@ Cobertura atual:
 | Gavetas | Criar gaveta; gaveta aparece na tela inicial; validação de nome e autor obrigatórios; excluir gaveta |
 | Figurinhas da galeria | Adicionar figurinhas; completar o mínimo para o WhatsApp; remover figurinha |
 | Envio para o WhatsApp | Envio bloqueado abaixo do mínimo; envio liberado com 3 figurinhas; aviso de WhatsApp não instalado |
+| Emojis, tags e busca | Escolher emojis; limite de 3 emojis; busca por tag ignorando maiúsculas e acentos; busca por emoji; busca pelo nome da gaveta; busca sem resultados |
 
 Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentro do WhatsApp é validada manualmente em um aparelho real:
 
@@ -261,7 +264,6 @@ Funcionalidade: Tela inicial
 
 ## Próximos passos
 
-- Busca de figurinhas por emoji e tag.
 - Figurinhas favoritas e mais usadas.
 - Criador de figurinhas com recorte automático de fundo e texto.
 - Compartilhamento de gavetas por QR code ou arquivo.

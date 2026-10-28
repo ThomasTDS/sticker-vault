@@ -25,6 +25,26 @@ class HomePage extends BasePage {
     return this.byTestId('home-new-pack-button');
   }
 
+  get searchInput() {
+    return this.byTestId('home-search-input');
+  }
+
+  get searchEmptyMessage() {
+    return this.byTestId('home-search-empty');
+  }
+
+  get searchResults() {
+    return this.allByTestIdPattern('home-search-result-\\d+');
+  }
+
+  searchResultPackAt(index: number) {
+    return this.byTestId(`home-search-result-pack-${index}`);
+  }
+
+  async search(text: string) {
+    await this.searchInput.setValue(text);
+  }
+
   packNameAt(index: number) {
     return this.byTestId(`home-pack-name-${index}`);
   }

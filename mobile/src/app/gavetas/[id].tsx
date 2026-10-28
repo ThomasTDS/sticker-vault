@@ -153,6 +153,11 @@ export default function PackScreen() {
               : `Faltam ${missingForWhatsApp} figurinhas para mandar a gaveta pro WhatsApp.`}
           </Text>
         )}
+        {stickers.length > 0 && (
+          <Text testID="pack-sticker-tip" style={[styles.meta, { color: colors.text }]}>
+            Toque numa figurinha para escolher emojis e tags; segure para remover.
+          </Text>
+        )}
       </View>
 
       <FlatList
@@ -172,6 +177,7 @@ export default function PackScreen() {
         renderItem={({ item, index }) => (
           <Pressable
             testID={`pack-sticker-${index}`}
+            onPress={() => router.push({ pathname: '/figurinhas/[id]', params: { id: item.id } })}
             onLongPress={() => handleRemoveSticker(item)}
             style={[styles.stickerCell, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
