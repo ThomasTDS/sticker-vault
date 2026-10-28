@@ -41,6 +41,10 @@ class PackPage extends BasePage {
     return this.allByTestIdPattern('pack-sticker-\\d+');
   }
 
+  favoriteBadgeAt(index: number) {
+    return this.byTestId(`pack-sticker-favorite-${index}`);
+  }
+
   stickerAt(index: number) {
     return this.byTestId(`pack-sticker-${index}`);
   }

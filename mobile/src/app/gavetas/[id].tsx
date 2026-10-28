@@ -182,6 +182,11 @@ export default function PackScreen() {
             style={[styles.stickerCell, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
             <Image source={{ uri: item.fileUri }} style={styles.stickerImage} contentFit="contain" />
+            {item.favorite && (
+              <Text testID={`pack-sticker-favorite-${index}`} style={[styles.favoriteBadge, { color: colors.primary }]}>
+                ★
+              </Text>
+            )}
           </Pressable>
         )}
       />
@@ -273,6 +278,12 @@ const styles = StyleSheet.create({
   },
   stickerImage: {
     flex: 1,
+  },
+  favoriteBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 8,
+    fontSize: 16,
   },
   processing: {
     alignItems: 'center',

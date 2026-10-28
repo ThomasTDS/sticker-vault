@@ -5,7 +5,16 @@ import { Image } from 'expo-image';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listPacks, PACK_MAX_STICKERS, searchStickers, type Pack, type StickerSearchResult } from '@/db/packs';
+import { StickerShelf } from '@/components/sticker-shelf';
+import {
+  listFavoriteStickers,
+  listMostUsedStickers,
+  listPacks,
+  PACK_MAX_STICKERS,
+  searchStickers,
+  type Pack,
+  type StickerSearchResult,
+} from '@/db/packs';
 
 const RESULT_COLUMNS = 3;
 
@@ -15,11 +24,16 @@ export default function HomeScreen() {
   const [packs, setPacks] = useState<Pack[]>([]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<StickerSearchResult[]>([]);
+  const [favorites, setFavorites] = useState<StickerSearchResult[]>([]);
+  const [mostUsed, setMostUsed] = useState<StickerSearchResult[]>([]);
   const searching = query.trim().length > 0;
+  const hasShelves = favorites.length > 0 || mostUsed.length > 0;
 
   useFocusEffect(
     useCallback(() => {
       listPacks(db).then(setPacks);
+      listFavoriteStickers(db).then(setFavorites);
+      listMostUsedStickers(db).then(setMostUsed);
       searchStickers(db, query).then(setResults);
     }, [db, query]),
   );
@@ -90,6 +104,15 @@ export default function HomeScreen() {
           data={packs}
           keyExtractor={(pack) => String(pack.id)}
           contentContainerStyle={packs.length === 0 ? styles.emptyContainer : styles.listContent}
+          ListHeaderComponent={
+            hasShelves ? (
+              <View style={styles.shelves}>
+                <StickerShelf testID="home-favorites" title="★ Favoritas" stickers={favorites} />
+                <StickerShelf testID="home-most-used" title="Mais usadas" stickers={mostUsed} showUseCount />
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Gavetas</Text>
+              </View>
+            ) : undefined
+          }
           ListEmptyComponent={
             <View testID="home-empty-state" style={styles.emptyState}>
               <Text testID="home-empty-message" style={[styles.emptyTitle, { color: colors.text }]}>
@@ -172,6 +195,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.7,
     textAlign: 'center',
+  },
+  shelves: {
+    gap: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   listContent: {
     gap: 12,
