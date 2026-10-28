@@ -15,6 +15,7 @@ import {
   type Sticker,
 } from '@/db/packs';
 import { EMOJI_OPTIONS } from '@/stickers/emojis';
+import { palette } from '@/theme/colors';
 
 export default function StickerScreen() {
   const { colors } = useTheme();
@@ -162,7 +163,7 @@ export default function StickerScreen() {
           value={tagsText}
           onChangeText={setTagsText}
           placeholder="Ex.: bom dia, trabalho, risada"
-          placeholderTextColor={colors.border}
+          placeholderTextColor={palette.creamMuted}
           autoCapitalize="none"
           style={[styles.input, { color: colors.text, borderColor: colors.border, backgroundColor: colors.card }]}
         />
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   primaryButtonText: {
-    color: '#1E2430',
+    color: palette.brown,
     fontSize: 16,
     fontWeight: '700',
   },
