@@ -22,7 +22,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 
 ## Status
 
-Em desenvolvimento. Já é possível criar gavetas (pacotes) e guardar figurinhas importadas da galeria. A próxima etapa é o envio dos pacotes para o WhatsApp.
+Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. A próxima etapa é a busca de figurinhas por emoji e tag.
 
 ## Funcionalidades
 
@@ -33,6 +33,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Formato do WhatsApp:** cada imagem é recortada em quadrado, redimensionada para 512x512 e salva em WebP com até 100 KB.
 - **Limites do WhatsApp:** de 3 a 30 figurinhas por gaveta; o app avisa quantas faltam para o mínimo e bloqueia acima do máximo.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
+- **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
 - **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
 
 ## Tecnologias
@@ -52,6 +53,7 @@ sticker-vault/
 │   ├── src/db/              # Banco de dados local (SQLite) e consultas
 │   ├── src/stickers/        # Conversão e armazenamento dos arquivos das figurinhas
 │   ├── src/theme/           # Cores dos temas claro e escuro
+│   ├── modules/             # Módulos nativos locais (Kotlin), como a integração com o WhatsApp
 │   ├── plugins/             # Config plugins do Expo para ajustes nativos
 │   └── app.json             # Configuração do aplicativo
 └── e2e/                     # Testes de ponta a ponta (Appium + WebdriverIO)
@@ -191,6 +193,14 @@ Cobertura atual:
 | Tela inicial | Cofre vazio na primeira abertura |
 | Gavetas | Criar gaveta; gaveta aparece na tela inicial; validação de nome e autor obrigatórios; excluir gaveta |
 | Figurinhas da galeria | Adicionar figurinhas; completar o mínimo para o WhatsApp; remover figurinha |
+| Envio para o WhatsApp | Envio bloqueado abaixo do mínimo; envio liberado com 3 figurinhas; aviso de WhatsApp não instalado |
+
+Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentro do WhatsApp é validada manualmente em um aparelho real:
+
+1. Instale o APK de release no celular (`adb install -r` com depuração USB ativada, ou enviando o arquivo para o aparelho).
+2. Crie uma gaveta com pelo menos 3 figurinhas.
+3. Toque em "Mandar pro WhatsApp" e confirme em "Adicionar".
+4. No WhatsApp, abra o painel de figurinhas e confira se a gaveta aparece com o ícone e as figurinhas.
 
 Para executar apenas uma funcionalidade:
 
@@ -251,7 +261,6 @@ Funcionalidade: Tela inicial
 
 ## Próximos passos
 
-- Envio das gavetas para o WhatsApp por meio de um módulo nativo em Kotlin.
 - Busca de figurinhas por emoji e tag.
 - Figurinhas favoritas e mais usadas.
 - Criador de figurinhas com recorte automático de fundo e texto.
