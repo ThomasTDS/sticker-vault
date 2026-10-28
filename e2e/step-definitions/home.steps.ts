@@ -14,7 +14,11 @@ Then('devo ver o subtítulo {string}', async (text: string) => {
   await expect(HomePage.subtitle).toHaveText(text);
 });
 
-Then('devo ver a mensagem de lista vazia {string}', async (text: string) => {
+Then('devo ver a mensagem de cofre vazio {string}', async (text: string) => {
   await expect(HomePage.emptyState).toBeDisplayed();
   await expect(HomePage.emptyStateMessage).toHaveText(text);
+});
+
+Then('devo ver a dica {string}', async (text: string) => {
+  await expect(HomePage.emptyStateHint).toHaveText(text);
 });

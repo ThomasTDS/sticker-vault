@@ -7,7 +7,9 @@
     "icon": "./assets/images/icon.png",
     "scheme": "stickervault",
     "userInterfaceStyle": "automatic",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "android": {
       "package": "com.thomastds.stickervault",
       "adaptiveIcon": {
@@ -28,7 +30,13 @@
           "imageWidth": 76
         }
       ],
-      ["./plugins/with-cmake-version", { "version": "3.31.6" }]
+      [
+        "./plugins/with-cmake-version",
+        {
+          "version": "3.31.6"
+        }
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,
