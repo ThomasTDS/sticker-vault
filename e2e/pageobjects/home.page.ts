@@ -62,6 +62,10 @@ class HomePage extends BasePage {
     return this.allByTestIdPattern('home-most-used-count-\\d+');
   }
 
+  get packNames() {
+    return this.allByTestIdPattern('home-pack-name-\\d+');
+  }
+
   packNameAt(index: number) {
     return this.byTestId(`home-pack-name-${index}`);
   }

@@ -3,9 +3,12 @@ import { SQLiteProvider } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
 
 import { DATABASE_NAME, migrateDatabase } from '@/db/database';
+import { useIncomingShares } from '@/stickers/use-incoming-shares';
 import { palette, VaultTheme } from '@/theme/colors';
 
 export default function RootLayout() {
+  useIncomingShares();
+
   return (
     <ThemeProvider value={VaultTheme}>
       <StatusBar style="light" />

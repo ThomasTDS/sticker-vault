@@ -45,7 +45,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
 - **Criador de figurinhas:** escolha uma foto, remova o fundo automaticamente (ML Kit, processado no próprio aparelho) e escreva textos em cima e embaixo, com prévia ao vivo.
-- **Compartilhar gavetas:** gere um arquivo `.stickervault` com as figurinhas, emojis e tags e mande por qualquer app. Quem recebe pode tocar no arquivo e escolher o Sticker Vault em "Abrir com" (no WhatsApp, no app Arquivos etc.) ou usar "Importar gaveta" na tela inicial; as imagens recebidas são sempre reprocessadas para o formato do WhatsApp.
+- **Compartilhar gavetas:** gere um arquivo `.stickervault` com as figurinhas, emojis e tags e mande por qualquer app. Quem recebe pode tocar no arquivo e escolher o Sticker Vault em "Abrir com", compartilhar o arquivo com o Sticker Vault pelo menu "Compartilhar" de outro app (WhatsApp, Drive, Arquivos etc.) ou usar "Importar gaveta" na tela inicial; as imagens recebidas são sempre reprocessadas para o formato do WhatsApp.
 - **Identidade visual:** tema escuro com fundo marrom, textos em creme, detalhes em dourado e o título na fonte Major Mono Display.
 - **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
 
@@ -69,7 +69,7 @@ sticker-vault/
 │   ├── src/db/              # Banco de dados local (SQLite) e consultas
 │   ├── src/stickers/        # Conversão e armazenamento dos arquivos das figurinhas
 │   ├── src/theme/           # Cores dos temas claro e escuro
-│   ├── modules/             # Módulos nativos locais (Kotlin), como a integração com o WhatsApp
+│   ├── modules/             # Módulos nativos locais (Kotlin): WhatsApp, criador de figurinhas e compartilhamento
 │   ├── plugins/             # Config plugins do Expo para ajustes nativos
 │   └── app.json             # Configuração do aplicativo
 └── e2e/                     # Testes de ponta a ponta (Appium + WebdriverIO)
@@ -215,6 +215,7 @@ Cobertura atual:
 | Criador de figurinhas | Salvamento bloqueado sem foto; figurinha com texto estilo meme; remover e restaurar o fundo (`@modelo-ml`) |
 | Compartilhamento de gavetas | Compartilhar como arquivo; bloqueio em gaveta vazia; importar gaveta recebida com emojis; recusar arquivo inválido |
 | Abrir com | Abrir gaveta pelo app Arquivos do Android; avisar quando o arquivo aberto não é uma gaveta |
+| Receber pelo menu Compartilhar | Exportar a gaveta e recebê-la de volta pelo menu de compartilhamento do Android (ida e volta) |
 | Emojis, tags e busca | Escolher emojis; limite de 3 emojis; busca por tag ignorando maiúsculas e acentos; busca por emoji; busca pelo nome da gaveta; busca sem resultados |
 
 Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentro do WhatsApp é validada manualmente em um aparelho real:
@@ -306,7 +307,6 @@ No CI, cada funcionalidade tem uma nova tentativa automática para absorver inst
 
 ## Próximos passos
 
-- Receber gavetas pelo menu "Compartilhar" de outros apps.
 - Figurinhas animadas.
 
 ## Autor

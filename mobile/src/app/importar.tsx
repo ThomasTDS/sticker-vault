@@ -8,7 +8,7 @@ import { takeIncomingFileUri } from '@/stickers/incoming-file';
 import { importPackFromFile, PackFileError } from '@/stickers/pack-transfer';
 import { palette } from '@/theme/colors';
 
-// Opened when the user picks Sticker Vault in Android's "Open with" for a .stickervault file.
+// Opened when a drawer file reaches the app through Android's "Open with" or "Share" menus.
 export default function ImportScreen() {
   const { colors } = useTheme();
   const db = useSQLiteContext();
@@ -30,6 +30,9 @@ export default function ImportScreen() {
     importPackFromFile(db, new File(uri))
       .then((result) => {
         // The vault goes underneath, so "back" from the new drawer returns to it instead of closing the app.
+        if (router.canDismiss()) {
+          router.dismissAll();
+        }
         router.replace('/');
         router.push({ pathname: '/gavetas/[id]', params: { id: result.packId } });
         if (result.skipped > 0) {

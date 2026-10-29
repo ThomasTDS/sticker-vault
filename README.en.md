@@ -45,7 +45,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
 - **Sticker maker:** pick a photo, remove the background automatically (ML Kit, processed on the device) and add top and bottom captions, with a live preview.
-- **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient can tap the file and choose Sticker Vault in "Open with" (in WhatsApp, the Files app, etc.) or use "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
+- **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient can tap the file and choose Sticker Vault in "Open with", share the file with Sticker Vault through another app's "Share" menu (WhatsApp, Drive, Files, etc.) or use "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
 - **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
 
@@ -69,7 +69,7 @@ sticker-vault/
 │   ├── src/db/              # Local database (SQLite) and queries
 │   ├── src/stickers/        # Sticker file conversion and storage
 │   ├── src/theme/           # Light and dark theme colors
-│   ├── modules/             # Local native modules (Kotlin), such as the WhatsApp integration
+│   ├── modules/             # Local native modules (Kotlin): WhatsApp, sticker maker and sharing
 │   ├── plugins/             # Expo config plugins for native adjustments
 │   └── app.json             # App configuration
 └── e2e/                     # End-to-end tests (Appium + WebdriverIO)
@@ -215,6 +215,7 @@ Current coverage:
 | Sticker maker | Saving blocked without a photo; sticker with meme-style captions; remove and restore the background (`@modelo-ml`) |
 | Sharing drawers | Share as a file; blocked for an empty drawer; import a received drawer with emojis; reject an invalid file |
 | Open with | Open a drawer from the Android Files app; warn when the opened file is not a drawer |
+| Receive through Share | Export a drawer and receive it back through the Android share sheet (round trip) |
 | Emojis, tags and search | Pick emojis; 3-emoji limit; search by tag ignoring case and accents; search by emoji; search by drawer name; search with no results |
 
 The sending scenarios run on an emulator without WhatsApp. The confirmation inside WhatsApp is validated manually on a real device:
@@ -306,7 +307,6 @@ On CI each feature gets one automatic retry to absorb emulator instability. The 
 
 ## Next steps
 
-- Receiving drawers through other apps' "Share" menu.
 - Animated stickers.
 
 ## Author
