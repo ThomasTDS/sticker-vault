@@ -16,6 +16,8 @@ permissions:
 env:
   NODE_VERSION: 24
   CMAKE_VERSION: 3.31.6
+  # Android command-line tools (sdkmanager/avdmanager) build, newer than the one on the runner image.
+  CMDLINE_TOOLS_BUILD: 16111833
   EMULATOR_API_LEVEL: 34
 
 jobs:
@@ -72,6 +74,17 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
+      # The runner's avdmanager is older than the SDK repository ("SDK XML version 4") and intermittently
+      # fails to create the AVD with "hwMap is null", so the command-line tools are updated first.
+      - name: Atualizar as ferramentas de linha de comando do Android SDK
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/cmdline-tools.zip"             "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_BUILD}_latest.zip"
+          rm -rf "$ANDROID_HOME/cmdline-tools/latest"
+          unzip -q "$RUNNER_TEMP/cmdline-tools.zip" -d "$RUNNER_TEMP/cmdline-tools"
+          mv "$RUNNER_TEMP/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+
       # The project pins CMake 3.31.6 (see mobile/plugins/with-cmake-version.js).
       - name: Instalar CMake do Android SDK
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "cmake;${CMAKE_VERSION}" > /dev/null
@@ -108,7 +121,6 @@ jobs:
           api-level: ${{ env.EMULATOR_API_LEVEL }}
           target: google_apis
           arch: x86_64
-          profile: pixel_6
           ram-size: 4096M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none

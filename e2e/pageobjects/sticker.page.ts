@@ -6,12 +6,13 @@ class StickerPage extends BasePage {
     return this.byTestId('sticker-image');
   }
 
+  // Read after scrolling into view: on small screens choosing emojis scrolls these texts off the top.
   get selectedEmojis() {
-    return this.byTestId('sticker-emoji-selected');
+    return this.scrollTo('new UiSelector().resourceId("sticker-emoji-selected")');
   }
 
   get emojiHint() {
-    return this.byTestId('sticker-emoji-hint');
+    return this.scrollTo('new UiSelector().resourceId("sticker-emoji-hint")');
   }
 
   get tagsInput() {
