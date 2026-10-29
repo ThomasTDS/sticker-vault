@@ -62,7 +62,8 @@ class StickerPage extends BasePage {
   }
 
   async save() {
-    await this.scrollTo('new UiSelector().resourceId("sticker-save-button")').click();
+    await this.scrollToEnd();
+    await this.saveButton.click();
   }
 }
 

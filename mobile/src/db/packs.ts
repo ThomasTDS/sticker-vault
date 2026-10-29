@@ -169,13 +169,14 @@ export async function searchStickers(db: SQLiteDatabase, query: string): Promise
     );
 }
 
-export async function addSticker(db: SQLiteDatabase, packId: number, fileUri: string): Promise<void> {
-  await db.runAsync(
+export async function addSticker(db: SQLiteDatabase, packId: number, fileUri: string): Promise<number> {
+  const result = await db.runAsync(
     'INSERT INTO stickers (pack_id, file_uri, created_at) VALUES (?, ?, ?)',
     packId,
     fileUri,
     Date.now(),
   );
+  return result.lastInsertRowId;
 }
 
 export async function deleteSticker(db: SQLiteDatabase, id: number): Promise<void> {

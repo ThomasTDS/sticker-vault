@@ -4,6 +4,7 @@ import AlertDialog from '../pageobjects/alert.dialog.ts';
 import PackPage from '../pageobjects/pack.page.ts';
 
 When('eu mando a gaveta pro WhatsApp', async () => {
+  await PackPage.sendToWhatsAppButton.waitForEnabled();
   await PackPage.sendToWhatsAppButton.click();
 });
 

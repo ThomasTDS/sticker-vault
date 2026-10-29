@@ -35,6 +35,7 @@ When('restauro o fundo da foto', async () => {
 });
 
 When('salvo a figurinha criada', async () => {
+  await MakerPage.scrollToEnd();
   await MakerPage.saveButton.click();
   await PackPage.waitForScreen();
 });
@@ -44,6 +45,7 @@ Then('devo ver a mensagem do criador {string}', async (text: string) => {
 });
 
 Then('o botão de salvar a figurinha criada deve estar desabilitado', async () => {
+  await MakerPage.scrollToEnd();
   await expect(MakerPage.saveButton).toBeDisabled();
 });
 
