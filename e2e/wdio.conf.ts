@@ -31,7 +31,8 @@ export const config: WebdriverIO.Config = {
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
 
-  services: [['appium', { logPath: './logs' }]],
+  // Appium can take more than the default 30 s to start on a busy machine or CI runner.
+  services: [['appium', { logPath: './logs', appiumStartTimeout: 90000 }]],
   port: 4723,
 
   framework: 'cucumber',
