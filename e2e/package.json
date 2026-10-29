@@ -17,6 +17,7 @@
     "@wdio/spec-reporter": "^10.1.0",
     "appium": "^3.9.0",
     "appium-uiautomator2-driver": "^8.7.2",
+    "fflate": "^0.8.3",
     "typescript": "~6.0.3"
   }
 }

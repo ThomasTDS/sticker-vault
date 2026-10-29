@@ -31,7 +31,7 @@ class MakerPage extends BasePage {
   }
 
   get saveButton() {
-    return this.scrollTo('maker-save-button');
+    return this.byTestId('maker-save-button');
   }
 
   // The screen scrolls; UiScrollable brings the element into view before it is used.

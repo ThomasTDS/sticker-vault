@@ -26,7 +26,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 
 ## Status
 
-Em desenvolvimento. Já é possível criar gavetas (pacotes), guardar figurinhas importadas da galeria e mandar as gavetas para o WhatsApp. Também é possível classificar as figurinhas com emojis e tags e buscá-las no cofre. As figurinhas favoritas e as mais compartilhadas ficam à mão na tela inicial. Também é possível criar figurinhas no próprio app, com recorte automático do fundo e texto estilo meme. A próxima etapa é o compartilhamento de gavetas entre amigos.
+Em desenvolvimento ativo. O roadmap inicial está completo: gavetas, importação da galeria, envio ao WhatsApp, emojis e tags com busca, favoritas e mais usadas, criador de figurinhas e compartilhamento de gavetas. Todas as funcionalidades têm cenários automatizados.
 
 ## Funcionalidades
 
@@ -44,6 +44,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
 - **Criador de figurinhas:** escolha uma foto, remova o fundo automaticamente (ML Kit, processado no próprio aparelho) e escreva textos em cima e embaixo, com prévia ao vivo.
+- **Compartilhar gavetas:** gere um arquivo `.stickervault` com as figurinhas, emojis e tags e mande por qualquer app. Quem recebe usa "Importar gaveta" na tela inicial; as imagens recebidas são sempre reprocessadas para o formato do WhatsApp.
 - **Identidade visual:** tema escuro com fundo marrom, textos em creme, detalhes em dourado e o título na fonte Major Mono Display.
 - **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
 
@@ -74,6 +75,7 @@ sticker-vault/
     ├── pageobjects/         # Page Objects (telas do app, seletor de fotos e diálogos)
     ├── support/             # Utilitários de dispositivo (limpeza do app, envio de imagens)
     ├── fixtures/            # Imagens usadas nos testes
+    ├── reports/             # Capturas de tela de passos que falharam (gerado, não versionado)
     └── wdio.conf.ts         # Configuração do WebdriverIO e do Appium
 ```
 
@@ -208,6 +210,7 @@ Cobertura atual:
 | Envio para o WhatsApp | Envio bloqueado abaixo do mínimo; envio liberado com 3 figurinhas; aviso de WhatsApp não instalado |
 | Favoritas e mais usadas | Favoritar; desfazer favorita; compartilhar pelo Android; ordenação das mais usadas |
 | Criador de figurinhas | Salvamento bloqueado sem foto; figurinha com texto estilo meme; remover e restaurar o fundo (`@modelo-ml`) |
+| Compartilhamento de gavetas | Compartilhar como arquivo; bloqueio em gaveta vazia; importar gaveta recebida com emojis; recusar arquivo inválido |
 | Emojis, tags e busca | Escolher emojis; limite de 3 emojis; busca por tag ignorando maiúsculas e acentos; busca por emoji; busca pelo nome da gaveta; busca sem resultados |
 
 Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentro do WhatsApp é validada manualmente em um aparelho real:
@@ -284,8 +287,9 @@ Funcionalidade: Tela inicial
 
 ## Próximos passos
 
-- Compartilhamento de gavetas por QR code ou arquivo.
 - Execução dos testes em integração contínua (GitHub Actions).
+- Abrir arquivos `.stickervault` diretamente pelo "Abrir com" do Android.
+- Figurinhas animadas.
 
 ## Autor
 

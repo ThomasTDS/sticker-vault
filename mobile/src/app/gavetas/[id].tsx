@@ -17,6 +17,7 @@ import {
   type Sticker,
 } from '@/db/packs';
 import { createStickerFile, deletePackFiles, deleteStickerFile } from '@/stickers/sticker-files';
+import { sharePack } from '@/stickers/pack-transfer';
 import { sendPackToWhatsApp } from '@/stickers/whatsapp-export';
 import { palette } from '@/theme/colors';
 
@@ -72,8 +73,17 @@ export default function PackScreen() {
     } catch {
       Alert.alert('Ops!', 'Não deu pra guardar uma das imagens. Tenta de novo?');
     } finally {
-      setProcessing(false);
+      // Reload before showing the buttons again, so the counter and the send button are already up to date.
       await load();
+      setProcessing(false);
+    }
+  }
+
+  async function handleSharePack() {
+    try {
+      await sharePack(db, packId);
+    } catch {
+      Alert.alert('Ops!', 'Não deu pra preparar o arquivo da gaveta. Tenta de novo?');
     }
   }
 
@@ -235,9 +245,24 @@ export default function PackScreen() {
               <Text style={[styles.primaryButtonText, { color: palette.goldLight }]}>Criar figurinha</Text>
             </Pressable>
           </View>
-          <Pressable testID="pack-delete-button" onPress={handleDeletePack} style={styles.secondaryButton}>
-            <Text style={[styles.secondaryButtonText, { color: colors.notification }]}>Excluir gaveta</Text>
-          </Pressable>
+          <View style={styles.actionRow}>
+            <Pressable
+              testID="pack-share-button"
+              onPress={handleSharePack}
+              disabled={stickers.length === 0}
+              accessibilityState={{ disabled: stickers.length === 0 }}
+              style={[styles.secondaryButton, styles.actionRowButton, { opacity: stickers.length === 0 ? 0.4 : 1 }]}
+            >
+              <Text style={[styles.secondaryButtonText, { color: palette.goldLight }]}>Compartilhar gaveta</Text>
+            </Pressable>
+            <Pressable
+              testID="pack-delete-button"
+              onPress={handleDeletePack}
+              style={[styles.secondaryButton, styles.actionRowButton]}
+            >
+              <Text style={[styles.secondaryButtonText, { color: colors.notification }]}>Excluir gaveta</Text>
+            </Pressable>
+          </View>
         </View>
       )}
     </View>
