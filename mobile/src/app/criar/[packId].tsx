@@ -201,6 +201,8 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 24,
+    // Keeps the last button clear of the Android gesture bar when scrolled to the end.
+    paddingBottom: 64,
     gap: 16,
   },
   preview: {

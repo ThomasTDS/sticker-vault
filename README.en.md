@@ -26,7 +26,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 
 ## Status
 
-In development. You can already create drawers (sticker packs), store stickers imported from the gallery and send drawers to WhatsApp. Stickers can also be tagged with emojis and keywords and searched within the vault. Favorite and most-shared stickers are one tap away on the home screen. Stickers can also be created within the app, with automatic background removal and meme-style text. The next step is sharing drawers between friends.
+Under active development. The initial roadmap is complete: drawers, gallery import, sending to WhatsApp, emojis and tags with search, favorites and most used, sticker maker and drawer sharing. Every feature has automated scenarios.
 
 ## Features
 
@@ -44,6 +44,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
 - **Sticker maker:** pick a photo, remove the background automatically (ML Kit, processed on the device) and add top and bottom captions, with a live preview.
+- **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient uses "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
 - **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
 
@@ -74,6 +75,7 @@ sticker-vault/
     ├── pageobjects/         # Page Objects (app screens, photo picker and dialogs)
     ├── support/             # Device utilities (app reset, image upload)
     ├── fixtures/            # Images used by the tests
+    ├── reports/             # Screenshots of failed steps (generated, not versioned)
     └── wdio.conf.ts         # WebdriverIO and Appium configuration
 ```
 
@@ -208,6 +210,7 @@ Current coverage:
 | Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
 | Favorites and most used | Mark a favorite; unmark a favorite; share through Android; most-used ordering |
 | Sticker maker | Saving blocked without a photo; sticker with meme-style captions; remove and restore the background (`@modelo-ml`) |
+| Sharing drawers | Share as a file; blocked for an empty drawer; import a received drawer with emojis; reject an invalid file |
 | Emojis, tags and search | Pick emojis; 3-emoji limit; search by tag ignoring case and accents; search by emoji; search by drawer name; search with no results |
 
 The sending scenarios run on an emulator without WhatsApp. The confirmation inside WhatsApp is validated manually on a real device:
@@ -284,8 +287,9 @@ Funcionalidade: Tela inicial
 
 ## Next steps
 
-- Sharing drawers via QR code or file.
 - Running the tests in continuous integration (GitHub Actions).
+- Opening `.stickervault` files directly from Android's "Open with".
+- Animated stickers.
 
 ## Author
 

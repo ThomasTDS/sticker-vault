@@ -33,6 +33,10 @@ class PackPage extends BasePage {
     return this.byTestId('pack-create-sticker-button');
   }
 
+  get shareButton() {
+    return this.byTestId('pack-share-button');
+  }
+
   get deleteButton() {
     return this.byTestId('pack-delete-button');
   }

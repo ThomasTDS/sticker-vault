@@ -25,6 +25,10 @@ class HomePage extends BasePage {
     return this.byTestId('home-new-pack-button');
   }
 
+  get importButton() {
+    return this.byTestId('home-import-button');
+  }
+
   get searchInput() {
     return this.byTestId('home-search-input');
   }
@@ -74,8 +78,9 @@ class HomePage extends BasePage {
     return index;
   }
 
+  // After the app data is cleared, the first launch on a busy emulator can take a while.
   async waitForScreen() {
-    await this.title.waitForDisplayed({ timeout: 30000 });
+    await this.title.waitForDisplayed({ timeout: 45000 });
   }
 }
 

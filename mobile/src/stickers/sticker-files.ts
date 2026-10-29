@@ -16,6 +16,12 @@ function packDirectory(packId: number) {
   return new Directory(Paths.document, 'stickers', String(packId));
 }
 
+// Same as createStickerFile, for images whose dimensions are not known in advance.
+export async function createStickerFileFromUri(packId: number, uri: string): Promise<string> {
+  const { width, height } = await ImageManipulator.manipulate(uri).renderAsync();
+  return createStickerFile(packId, { uri, width, height });
+}
+
 // Center-crops the image to a square and saves it as a WhatsApp-compatible sticker.
 export async function createStickerFile(packId: number, image: SourceImage): Promise<string> {
   const side = Math.min(image.width, image.height);

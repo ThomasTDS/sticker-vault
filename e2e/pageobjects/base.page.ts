@@ -9,4 +9,9 @@ export default abstract class BasePage {
   protected allByTestIdPattern(pattern: string) {
     return $$(`android=new UiSelector().resourceIdMatches("${pattern}")`);
   }
+
+  // Scrolls the screen to the end, so the last buttons sit above the Android gesture bar.
+  async scrollToEnd() {
+    await $('android=new UiScrollable(new UiSelector().scrollable(true)).scrollToEnd(5)').isExisting();
+  }
 }

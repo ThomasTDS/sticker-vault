@@ -2,7 +2,7 @@ import { router, useFocusEffect, useTheme } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StickerShelf } from '@/components/sticker-shelf';
@@ -15,6 +15,7 @@ import {
   type Pack,
   type StickerSearchResult,
 } from '@/db/packs';
+import { PackFileError, pickAndImportPack } from '@/stickers/pack-transfer';
 import { palette, TITLE_FONT } from '@/theme/colors';
 
 const RESULT_COLUMNS = 3;
@@ -38,6 +39,33 @@ export default function HomeScreen() {
       searchStickers(db, query).then(setResults);
     }, [db, query]),
   );
+
+  const [importing, setImporting] = useState(false);
+
+  async function handleImport() {
+    setImporting(true);
+    try {
+      const result = await pickAndImportPack(db);
+      if (!result) {
+        return;
+      }
+      router.push({ pathname: '/gavetas/[id]', params: { id: result.packId } });
+      if (result.skipped > 0) {
+        Alert.alert(
+          'Gaveta importada',
+          `${result.imported} figurinha(s) importada(s); ${result.skipped} não puderam ser lidas.`,
+        );
+      }
+    } catch (error) {
+      if (error instanceof PackFileError && error.reason === 'no-stickers') {
+        Alert.alert('Gaveta vazia', 'Nenhuma figurinha desse arquivo pôde ser lida.');
+      } else {
+        Alert.alert('Arquivo inválido', 'Esse arquivo não é uma gaveta do Sticker Vault.');
+      }
+    } finally {
+      setImporting(false);
+    }
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -145,13 +173,25 @@ export default function HomeScreen() {
         />
       )}
 
-      <Pressable
-        testID="home-new-pack-button"
-        onPress={() => router.push('/gavetas/nova')}
-        style={[styles.primaryButton, { backgroundColor: colors.primary }]}
-      >
-        <Text style={styles.primaryButtonText}>Nova gaveta</Text>
-      </Pressable>
+      <View style={styles.bottomActions}>
+        <Pressable
+          testID="home-new-pack-button"
+          onPress={() => router.push('/gavetas/nova')}
+          style={[styles.primaryButton, styles.bottomButton, { backgroundColor: colors.primary }]}
+        >
+          <Text style={styles.primaryButtonText}>Nova gaveta</Text>
+        </Pressable>
+        <Pressable
+          testID="home-import-button"
+          onPress={handleImport}
+          disabled={importing}
+          style={[styles.primaryButton, styles.bottomButton, styles.outlineButton, { opacity: importing ? 0.6 : 1 }]}
+        >
+          <Text style={[styles.primaryButtonText, { color: palette.goldLight }]}>
+            {importing ? 'Importando...' : 'Importar gaveta'}
+          </Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
@@ -263,6 +303,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 24,
     paddingVertical: 16,
+  },
+  bottomActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  bottomButton: {
+    flex: 1,
+  },
+  outlineButton: {
+    borderColor: palette.gold,
+    borderWidth: 2,
   },
   primaryButtonText: {
     color: palette.brown,
