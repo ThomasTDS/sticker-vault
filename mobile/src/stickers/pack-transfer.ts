@@ -15,7 +15,12 @@ import {
   STICKER_MAX_EMOJIS,
   updateStickerDetails,
 } from '@/db/packs';
-import { createStickerFileFromUri, deletePackFiles } from '@/stickers/sticker-files';
+import {
+  ANIMATED_STICKER_MAX_BYTES,
+  createStickerFileFromUri,
+  deletePackFiles,
+  storeAnimatedStickerFile,
+} from '@/stickers/sticker-files';
 
 // A shared drawer is a zip file with a manifest.json and one image per sticker.
 export const PACK_FILE_EXTENSION = '.stickervault';
@@ -29,6 +34,8 @@ type PackManifest = {
   version: number;
   name: string;
   publisher: string;
+  // Absent in files from before animated drawers existed, which are all static.
+  animated?: boolean;
   stickers: { file: string; emojis: string[]; tags: string[] }[];
 };
 
@@ -50,6 +57,25 @@ function fileSafeName(name: string) {
   );
 }
 
+const STICKER_SIZE = 512;
+
+// Checks the WebP header: an extended (VP8X) 512x512 file with the animation flag, within WhatsApp's size limit.
+function isAnimatedSticker(bytes: Uint8Array) {
+  const text = (start: number, length: number) => String.fromCharCode(...bytes.subarray(start, start + length));
+  const uint24 = (start: number) => bytes[start] | (bytes[start + 1] << 8) | (bytes[start + 2] << 16);
+  const ANIMATION_FLAG = 0x02;
+  return (
+    bytes.length >= 30 &&
+    bytes.length <= ANIMATED_STICKER_MAX_BYTES &&
+    text(0, 4) === 'RIFF' &&
+    text(8, 4) === 'WEBP' &&
+    text(12, 4) === 'VP8X' &&
+    (bytes[20] & ANIMATION_FLAG) !== 0 &&
+    uint24(24) + 1 === STICKER_SIZE &&
+    uint24(27) + 1 === STICKER_SIZE
+  );
+}
+
 const asStrings = (value: unknown) =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 
@@ -65,6 +91,7 @@ export async function exportPack(db: SQLiteDatabase, packId: number): Promise<st
     version: PACK_FILE_VERSION,
     name: pack.name,
     publisher: pack.publisher,
+    animated: pack.animated,
     stickers: stickers.map((sticker, index) => ({
       file: `stickers/${index + 1}.webp`,
       emojis: sticker.emojis,
@@ -111,7 +138,8 @@ function readManifest(entries: Record<string, Uint8Array>): PackManifest {
   return manifest;
 }
 
-// Images from a shared file are never trusted as they are: each one is re-encoded as a WhatsApp sticker.
+// Images from a shared file are never trusted as they are: static ones are re-encoded as WhatsApp stickers,
+// and animated ones (which re-encoding would flatten) must pass the animated sticker header and size check.
 export async function importPackFromFile(db: SQLiteDatabase, file: File): Promise<ImportResult> {
   let entries: Record<string, Uint8Array>;
   let manifest: PackManifest;
@@ -126,10 +154,12 @@ export async function importPackFromFile(db: SQLiteDatabase, file: File): Promis
   }
 
   const publisher = typeof manifest.publisher === 'string' && manifest.publisher.trim() ? manifest.publisher : '—';
+  const animated = manifest.animated === true;
   const packId = await createPack(
     db,
     manifest.name.trim().slice(0, PACK_NAME_MAX_LENGTH),
     publisher.trim().slice(0, PACK_PUBLISHER_MAX_LENGTH),
+    animated,
   );
 
   let imported = 0;
@@ -142,9 +172,17 @@ export async function importPackFromFile(db: SQLiteDatabase, file: File): Promis
     }
     const temp = new File(Paths.cache, `import-${Date.now()}-${index}`);
     try {
-      temp.create();
-      await temp.write(data);
-      const fileUri = await createStickerFileFromUri(packId, temp.uri);
+      let fileUri: string;
+      if (animated) {
+        if (!isAnimatedSticker(data)) {
+          throw new PackFileError('invalid-file');
+        }
+        fileUri = await storeAnimatedStickerFile(packId, data);
+      } else {
+        temp.create();
+        await temp.write(data);
+        fileUri = await createStickerFileFromUri(packId, temp.uri);
+      }
       const stickerId = await addSticker(db, packId, fileUri);
       await updateStickerDetails(
         db,

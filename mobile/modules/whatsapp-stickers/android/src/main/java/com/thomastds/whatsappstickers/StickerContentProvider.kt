@@ -86,7 +86,7 @@ class StickerContentProvider : ContentProvider() {
           "",
           pack.imageDataVersion,
           if (pack.avoidCache) 1 else 0,
-          0,
+          if (pack.animated) 1 else 0,
         ),
       )
     }

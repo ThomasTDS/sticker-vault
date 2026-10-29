@@ -13,6 +13,7 @@ data class StickerPackEntry(
   val trayImageFile: String,
   val imageDataVersion: String,
   val avoidCache: Boolean,
+  val animated: Boolean,
   val stickers: List<StickerEntry>,
 )
 
@@ -39,6 +40,7 @@ object StickerPackStore {
         trayImageFile = pack.getString("tray_image_file"),
         imageDataVersion = pack.getString("image_data_version"),
         avoidCache = pack.optBoolean("avoid_cache", false),
+        animated = pack.optBoolean("animated_sticker_pack", false),
         stickers = (0 until stickers.length()).map { stickerIndex ->
           val sticker = stickers.getJSONObject(stickerIndex)
           val emojis = sticker.getJSONArray("emojis")

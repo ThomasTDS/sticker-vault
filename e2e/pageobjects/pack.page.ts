@@ -61,8 +61,13 @@ class PackPage extends BasePage {
     await this.name.waitForDisplayed();
   }
 
-  async waitForStickersSaved() {
-    await this.addStickersButton.waitForDisplayed({ timeout: 30000 });
+  get typeLabel() {
+    return this.byTestId('pack-type-label');
+  }
+
+  // Animating videos takes longer than saving photos, especially on CI emulators.
+  async waitForStickersSaved(timeout = 30000) {
+    await this.addStickersButton.waitForDisplayed({ timeout });
   }
 }
 

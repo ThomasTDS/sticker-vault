@@ -9,6 +9,10 @@ class NewPackPage extends BasePage {
     return this.byTestId('new-pack-publisher-input');
   }
 
+  get animatedSwitch() {
+    return this.byTestId('new-pack-animated-switch');
+  }
+
   get submitButton() {
     return this.byTestId('new-pack-submit-button');
   }

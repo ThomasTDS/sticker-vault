@@ -36,6 +36,24 @@ export async function resetApp() {
   throw new Error(`The app did not come to the foreground after ${LAUNCH_ATTEMPTS} attempts`);
 }
 
+const FIXTURE_VIDEO = 'clip.mp4';
+const VIDEOS_DIR = '/sdcard/Movies/StickerVaultE2E';
+
+// Copies the fixture video to the device gallery three times (clip-1.mp4 to clip-3.mp4),
+// so the photo picker lists them as the most recent videos.
+export async function pushGalleryVideos() {
+  const content = await readFile(path.resolve(import.meta.dirname, '../fixtures/videos', FIXTURE_VIDEO));
+  for (let index = 1; index <= 3; index++) {
+    const remotePath = `${VIDEOS_DIR}/clip-${index}.mp4`;
+    await browser.pushFile(remotePath, content.toString('base64'));
+    // Unlike images, videos are indexed without metadata (duration) until scanned, and the photo picker hides them.
+    await browser.execute('mobile: broadcast', {
+      action: 'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
+      uri: `file://${remotePath}`,
+    });
+  }
+}
+
 // Copies the fixture images to the device gallery, making them the most recent photos.
 // On Android 11+ shared storage is indexed by MediaProvider as soon as the file is written.
 export async function pushGalleryImages() {
