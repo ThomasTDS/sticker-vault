@@ -40,6 +40,23 @@
               "mimeType": "application/x-zip-compressed"
             }
           ]
+        },
+        {
+          "action": "SEND",
+          "category": [
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "mimeType": "application/octet-stream"
+            },
+            {
+              "mimeType": "application/zip"
+            },
+            {
+              "mimeType": "application/x-zip-compressed"
+            }
+          ]
         }
       ]
     },
