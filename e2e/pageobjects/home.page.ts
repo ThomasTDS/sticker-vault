@@ -1,3 +1,4 @@
+import { browser } from '@wdio/globals';
 import BasePage from './base.page.ts';
 
 class HomePage extends BasePage {
@@ -76,6 +77,11 @@ class HomePage extends BasePage {
       throw new Error(`Pack "${name}" not found on the home screen`);
     }
     return index;
+  }
+
+  async goBackToHome() {
+    await browser.back();
+    await this.waitForScreen();
   }
 
   // After the app data is cleared, the first launch on a busy emulator can take a while.

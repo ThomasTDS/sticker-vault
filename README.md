@@ -45,7 +45,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
 - **Criador de figurinhas:** escolha uma foto, remova o fundo automaticamente (ML Kit, processado no próprio aparelho) e escreva textos em cima e embaixo, com prévia ao vivo.
-- **Compartilhar gavetas:** gere um arquivo `.stickervault` com as figurinhas, emojis e tags e mande por qualquer app. Quem recebe usa "Importar gaveta" na tela inicial; as imagens recebidas são sempre reprocessadas para o formato do WhatsApp.
+- **Compartilhar gavetas:** gere um arquivo `.stickervault` com as figurinhas, emojis e tags e mande por qualquer app. Quem recebe pode tocar no arquivo e escolher o Sticker Vault em "Abrir com" (no WhatsApp, no app Arquivos etc.) ou usar "Importar gaveta" na tela inicial; as imagens recebidas são sempre reprocessadas para o formato do WhatsApp.
 - **Identidade visual:** tema escuro com fundo marrom, textos em creme, detalhes em dourado e o título na fonte Major Mono Display.
 - **Privacidade:** sem conta e sem anúncios; os dados ficam apenas no aparelho (SQLite e arquivos locais).
 
@@ -214,6 +214,7 @@ Cobertura atual:
 | Favoritas e mais usadas | Favoritar; desfazer favorita; compartilhar pelo Android; ordenação das mais usadas |
 | Criador de figurinhas | Salvamento bloqueado sem foto; figurinha com texto estilo meme; remover e restaurar o fundo (`@modelo-ml`) |
 | Compartilhamento de gavetas | Compartilhar como arquivo; bloqueio em gaveta vazia; importar gaveta recebida com emojis; recusar arquivo inválido |
+| Abrir com | Abrir gaveta pelo app Arquivos do Android; avisar quando o arquivo aberto não é uma gaveta |
 | Emojis, tags e busca | Escolher emojis; limite de 3 emojis; busca por tag ignorando maiúsculas e acentos; busca por emoji; busca pelo nome da gaveta; busca sem resultados |
 
 Os cenários de envio rodam em um emulador sem o WhatsApp. A confirmação dentro do WhatsApp é validada manualmente em um aparelho real:
@@ -290,6 +291,8 @@ Todo pull request para a `main` é validado pelo GitHub Actions (`.github/workfl
    - publica o resultado dos testes no próprio pull request;
    - em caso de falha, anexa as capturas de tela e os logs do Appium.
 
+A branch `main` é protegida: o merge de um pull request só é liberado com os dois checks do CI aprovados.
+
 No CI, cada funcionalidade tem uma nova tentativa automática para absorver instabilidades do emulador. O cenário `@modelo-ml` não roda no CI.
 
 ## Solução de problemas
@@ -303,7 +306,7 @@ No CI, cada funcionalidade tem uma nova tentativa automática para absorver inst
 
 ## Próximos passos
 
-- Abrir arquivos `.stickervault` diretamente pelo "Abrir com" do Android.
+- Receber gavetas pelo menu "Compartilhar" de outros apps.
 - Figurinhas animadas.
 
 ## Autor

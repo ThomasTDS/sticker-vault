@@ -45,7 +45,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
 - **Sticker maker:** pick a photo, remove the background automatically (ML Kit, processed on the device) and add top and bottom captions, with a live preview.
-- **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient uses "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
+- **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient can tap the file and choose Sticker Vault in "Open with" (in WhatsApp, the Files app, etc.) or use "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
 - **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
 - **Privacy:** no account and no ads; data stays on the device only (SQLite and local files).
 
@@ -214,6 +214,7 @@ Current coverage:
 | Favorites and most used | Mark a favorite; unmark a favorite; share through Android; most-used ordering |
 | Sticker maker | Saving blocked without a photo; sticker with meme-style captions; remove and restore the background (`@modelo-ml`) |
 | Sharing drawers | Share as a file; blocked for an empty drawer; import a received drawer with emojis; reject an invalid file |
+| Open with | Open a drawer from the Android Files app; warn when the opened file is not a drawer |
 | Emojis, tags and search | Pick emojis; 3-emoji limit; search by tag ignoring case and accents; search by emoji; search by drawer name; search with no results |
 
 The sending scenarios run on an emulator without WhatsApp. The confirmation inside WhatsApp is validated manually on a real device:
@@ -290,6 +291,8 @@ Every pull request to `main` is validated by GitHub Actions (`.github/workflows/
    - publishes the test results on the pull request itself;
    - on failure, attaches the screenshots and Appium logs.
 
+The `main` branch is protected: a pull request can only be merged once both CI checks pass.
+
 On CI each feature gets one automatic retry to absorb emulator instability. The `@modelo-ml` scenario does not run on CI.
 
 ## Troubleshooting
@@ -303,7 +306,7 @@ On CI each feature gets one automatic retry to absorb emulator instability. The 
 
 ## Next steps
 
-- Opening `.stickervault` files directly from Android's "Open with".
+- Receiving drawers through other apps' "Share" menu.
 - Animated stickers.
 
 ## Author
