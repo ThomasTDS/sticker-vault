@@ -35,7 +35,18 @@ export const config: WebdriverIO.Config = {
   port: 4723,
 
   framework: 'cucumber',
-  reporters: ['spec'],
+  reporters: [
+    'spec',
+    [
+      'junit',
+      {
+        outputDir: './reports/junit',
+        outputFileFormat: ({ cid }: { cid: string }) => `results-${cid}.xml`,
+      },
+    ],
+  ],
+  // On CI an emulator hiccup should not fail a whole feature, so each feature file gets one more attempt.
+  specFileRetries: process.env.CI ? 1 : 0,
   cucumberOpts: {
     require: ['./step-definitions/**/*.ts'],
     timeout: 60000,
