@@ -21,6 +21,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 - [Running the app](#running-the-app)
 - [Running the tests](#running-the-tests)
 - [Testing strategy](#testing-strategy)
+- [Continuous integration](#continuous-integration)
 - [Troubleshooting](#troubleshooting)
 - [Next steps](#next-steps)
 
@@ -54,12 +55,14 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 | --- | --- |
 | App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, ML Kit (Kotlin) |
 | Tests | WebdriverIO 10, Appium 3, UiAutomator2 driver, Cucumber (BDD), TypeScript |
+| CI | GitHub Actions, Android emulator (android-emulator-runner), JUnit report |
 | Platform | Android (distributed directly as an APK, no app store) |
 
 ## Repository structure
 
 ```
 sticker-vault/
+├── .github/workflows/       # Continuous integration pipeline (GitHub Actions)
 ├── mobile/                  # React Native app (Expo)
 │   ├── src/app/             # Screens (Expo Router routes)
 │   ├── src/components/      # Reusable UI components
@@ -276,6 +279,19 @@ Funcionalidade: Tela inicial
     E devo ver a mensagem de cofre vazio "Seu cofre tá vazio."
 ```
 
+## Continuous integration
+
+Every pull request to `main` is validated by GitHub Actions (`.github/workflows/ci.yml`), which can also be run manually from the **Actions** tab:
+
+1. **Type checking:** `npm ci` and `npm run typecheck` in `mobile/` and `e2e/`.
+2. **Android build and e2e tests:**
+   - installs JDK 17 and CMake 3.31.6 and builds the release APK, published as an artifact;
+   - starts an Android 14 emulator (API 34, `google_apis` image, the same one used locally) and runs the full suite;
+   - publishes the test results on the pull request itself;
+   - on failure, attaches the screenshots and Appium logs.
+
+On CI each feature gets one automatic retry to absorb emulator instability. The `@modelo-ml` scenario does not run on CI.
+
 ## Troubleshooting
 
 | Problem | Likely cause | Solution |
@@ -287,7 +303,6 @@ Funcionalidade: Tela inicial
 
 ## Next steps
 
-- Running the tests in continuous integration (GitHub Actions).
 - Opening `.stickervault` files directly from Android's "Open with".
 - Animated stickers.
 

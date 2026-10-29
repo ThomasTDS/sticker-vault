@@ -21,6 +21,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 - [Executando o aplicativo](#executando-o-aplicativo)
 - [Executando os testes](#executando-os-testes)
 - [Estratégia de testes](#estratégia-de-testes)
+- [Integração contínua](#integração-contínua)
 - [Solução de problemas](#solução-de-problemas)
 - [Próximos passos](#próximos-passos)
 
@@ -54,12 +55,14 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 | --- | --- |
 | Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, ML Kit (Kotlin) |
 | Testes | WebdriverIO 10, Appium 3, driver UiAutomator2, Cucumber (BDD), TypeScript |
+| CI | GitHub Actions, emulador Android (android-emulator-runner), relatório JUnit |
 | Plataforma | Android (distribuição direta por APK, sem loja) |
 
 ## Estrutura do repositório
 
 ```
 sticker-vault/
+├── .github/workflows/       # Pipeline de integração contínua (GitHub Actions)
 ├── mobile/                  # Aplicativo React Native (Expo)
 │   ├── src/app/             # Telas (rotas do Expo Router)
 │   ├── src/components/      # Componentes reutilizáveis de interface
@@ -276,6 +279,19 @@ Funcionalidade: Tela inicial
     E devo ver a mensagem de cofre vazio "Seu cofre tá vazio."
 ```
 
+## Integração contínua
+
+Todo pull request para a `main` é validado pelo GitHub Actions (`.github/workflows/ci.yml`), que também pode ser executado manualmente pela aba **Actions**:
+
+1. **Verificação de tipos:** `npm ci` e `npm run typecheck` em `mobile/` e `e2e/`.
+2. **Build Android e testes e2e:**
+   - instala o JDK 17 e o CMake 3.31.6 e gera o APK de release, publicado como artefato;
+   - sobe um emulador Android 14 (API 34, imagem `google_apis`, a mesma usada localmente) e executa a suíte completa;
+   - publica o resultado dos testes no próprio pull request;
+   - em caso de falha, anexa as capturas de tela e os logs do Appium.
+
+No CI, cada funcionalidade tem uma nova tentativa automática para absorver instabilidades do emulador. O cenário `@modelo-ml` não roda no CI.
+
 ## Solução de problemas
 
 | Problema | Causa provável | Solução |
@@ -287,7 +303,6 @@ Funcionalidade: Tela inicial
 
 ## Próximos passos
 
-- Execução dos testes em integração contínua (GitHub Actions).
 - Abrir arquivos `.stickervault` diretamente pelo "Abrir com" do Android.
 - Figurinhas animadas.
 
