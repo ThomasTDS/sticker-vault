@@ -45,6 +45,7 @@ export async function exportPacksForWhatsApp(db: SQLiteDatabase) {
       tray_image_file: TRAY_ICON_FILE,
       image_data_version: `${stickers.length}-${stickers[stickers.length - 1].id}`,
       avoid_cache: false,
+      animated_sticker_pack: pack.animated,
       stickers: stickers.map((sticker) => ({
         image_file: fileName(sticker.fileUri),
         emojis: sticker.emojis.length > 0 ? sticker.emojis : DEFAULT_EMOJIS,

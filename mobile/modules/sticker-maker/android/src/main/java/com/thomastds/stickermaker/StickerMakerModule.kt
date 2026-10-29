@@ -1,11 +1,13 @@
 package com.thomastds.stickermaker
 
+import android.net.Uri
 import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmentation
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmenterOptions
 import expo.modules.kotlin.Promise
+import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -41,6 +43,17 @@ class StickerMakerModule : Module() {
         .addOnFailureListener { error ->
           promise.reject("ERR_MODEL_UNAVAILABLE", error.message ?: "Google Play services unavailable", error)
         }
+    }
+
+    // Turns a short video into a 512x512 animated WebP of at most 500 KB.
+    AsyncFunction("createAnimatedSticker") { uri: String ->
+      try {
+        Uri.fromFile(AnimatedStickers.fromVideo(context, uri)).toString()
+      } catch (error: AnimatedStickers.VideoTooShortException) {
+        throw CodedException("ERR_VIDEO_TOO_SHORT", error.message, error)
+      } catch (error: AnimatedStickers.TooLargeException) {
+        throw CodedException("ERR_ANIMATION_TOO_LARGE", error.message, error)
+      }
     }
 
     AsyncFunction("composeSticker") { uri: String, topText: String, bottomText: String ->

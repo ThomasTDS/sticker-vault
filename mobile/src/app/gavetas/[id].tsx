@@ -16,7 +16,12 @@ import {
   type Pack,
   type Sticker,
 } from '@/db/packs';
-import { createStickerFile, deletePackFiles, deleteStickerFile } from '@/stickers/sticker-files';
+import {
+  createAnimatedStickerFile,
+  createStickerFile,
+  deletePackFiles,
+  deleteStickerFile,
+} from '@/stickers/sticker-files';
 import { sharePack } from '@/stickers/pack-transfer';
 import { sendPackToWhatsApp } from '@/stickers/whatsapp-export';
 import { palette } from '@/theme/colors';
@@ -54,8 +59,10 @@ export default function PackScreen() {
       return;
     }
 
+    // Animated drawers take short videos; static drawers take photos.
+    const animated = pack?.animated ?? false;
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: [animated ? 'videos' : 'images'],
       allowsMultipleSelection: true,
       selectionLimit: remaining,
       quality: 1,
@@ -67,11 +74,25 @@ export default function PackScreen() {
     setProcessing(true);
     try {
       for (const asset of result.assets.slice(0, remaining)) {
-        const fileUri = await createStickerFile(packId, asset);
+        const fileUri = animated
+          ? await createAnimatedStickerFile(packId, asset.uri)
+          : await createStickerFile(packId, asset);
         await addSticker(db, packId, fileUri);
       }
-    } catch {
-      Alert.alert('Ops!', 'Não deu pra guardar uma das imagens. Tenta de novo?');
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      if (code === 'ERR_VIDEO_TOO_SHORT') {
+        Alert.alert('Vídeo curto demais', 'Use um vídeo com pelo menos meio segundo.');
+      } else if (code === 'ERR_ANIMATION_TOO_LARGE') {
+        Alert.alert('Animação pesada demais', 'Tenta um vídeo mais curto ou com menos movimento.');
+      } else {
+        Alert.alert(
+          'Ops!',
+          animated
+            ? 'Não deu pra animar um dos vídeos. Tenta de novo?'
+            : 'Não deu pra guardar uma das imagens. Tenta de novo?',
+        );
+      }
     } finally {
       // Reload before showing the buttons again, so the counter and the send button are already up to date.
       await load();
@@ -153,6 +174,14 @@ export default function PackScreen() {
         <Text testID="pack-publisher" style={[styles.meta, { color: colors.text }]}>
           por {pack.publisher}
         </Text>
+        {pack.animated && (
+          <Text
+            testID="pack-type-label"
+            style={[styles.typeLabel, { color: palette.goldLight, borderColor: palette.goldDeep }]}
+          >
+            Gaveta animada
+          </Text>
+        )}
         <Text testID="pack-sticker-count" style={[styles.meta, { color: colors.text }]}>
           {stickers.length}/{PACK_MAX_STICKERS} figurinhas
         </Text>
@@ -204,7 +233,7 @@ export default function PackScreen() {
       {processing ? (
         <View testID="pack-processing" style={styles.processing}>
           <ActivityIndicator color={colors.primary} />
-          <Text style={{ color: colors.text }}>Guardando no cofre...</Text>
+          <Text style={{ color: colors.text }}>{pack.animated ? 'Animando no cofre...' : 'Guardando no cofre...'}</Text>
         </View>
       ) : (
         <View style={styles.actions}>
@@ -226,24 +255,26 @@ export default function PackScreen() {
               onPress={handleAddFromGallery}
               style={[styles.primaryButton, styles.actionRowButton, { backgroundColor: colors.primary }]}
             >
-              <Text style={styles.primaryButtonText}>Da galeria</Text>
+              <Text style={styles.primaryButtonText}>{pack.animated ? 'Vídeos da galeria' : 'Da galeria'}</Text>
             </Pressable>
-            <Pressable
-              testID="pack-create-sticker-button"
-              onPress={() =>
-                remaining > 0
-                  ? router.push({ pathname: '/criar/[packId]', params: { packId } })
-                  : Alert.alert('Gaveta cheia', `Cada gaveta guarda até ${PACK_MAX_STICKERS} figurinhas.`)
-              }
-              style={[
-                styles.primaryButton,
-                styles.actionRowButton,
-                styles.outlineButton,
-                { borderColor: palette.gold },
-              ]}
-            >
-              <Text style={[styles.primaryButtonText, { color: palette.goldLight }]}>Criar figurinha</Text>
-            </Pressable>
+            {!pack.animated && (
+              <Pressable
+                testID="pack-create-sticker-button"
+                onPress={() =>
+                  remaining > 0
+                    ? router.push({ pathname: '/criar/[packId]', params: { packId } })
+                    : Alert.alert('Gaveta cheia', `Cada gaveta guarda até ${PACK_MAX_STICKERS} figurinhas.`)
+                }
+                style={[
+                  styles.primaryButton,
+                  styles.actionRowButton,
+                  styles.outlineButton,
+                  { borderColor: palette.gold },
+                ]}
+              >
+                <Text style={[styles.primaryButtonText, { color: palette.goldLight }]}>Criar figurinha</Text>
+              </Pressable>
+            )}
           </View>
           <View style={styles.actionRow}>
             <Pressable
@@ -286,6 +317,16 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 15,
     opacity: 0.7,
+  },
+  typeLabel: {
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
   hint: {
     fontSize: 14,

@@ -13,6 +13,7 @@ export type Pack = {
   publisher: string;
   createdAt: number;
   stickerCount: number;
+  animated: boolean;
 };
 
 export type Sticker = {
@@ -34,6 +35,7 @@ type PackRow = {
   publisher: string;
   created_at: number;
   sticker_count: number;
+  animated: number;
 };
 
 type StickerRow = {
@@ -59,7 +61,7 @@ const STICKER_WITH_PACK_SELECT = `
 export const HOME_SECTION_LIMIT = 10;
 
 const PACK_SELECT = `
-  SELECT p.id, p.name, p.publisher, p.created_at, COUNT(s.id) AS sticker_count
+  SELECT p.id, p.name, p.publisher, p.created_at, p.animated, COUNT(s.id) AS sticker_count
   FROM packs p
   LEFT JOIN stickers s ON s.pack_id = p.id
 `;
@@ -71,6 +73,7 @@ function toPack(row: PackRow): Pack {
     publisher: row.publisher,
     createdAt: row.created_at,
     stickerCount: row.sticker_count,
+    animated: row.animated === 1,
   };
 }
 
@@ -114,12 +117,18 @@ export async function getPack(db: SQLiteDatabase, id: number): Promise<Pack | nu
   return row ? toPack(row) : null;
 }
 
-export async function createPack(db: SQLiteDatabase, name: string, publisher: string): Promise<number> {
+export async function createPack(
+  db: SQLiteDatabase,
+  name: string,
+  publisher: string,
+  animated = false,
+): Promise<number> {
   const result = await db.runAsync(
-    'INSERT INTO packs (name, publisher, created_at) VALUES (?, ?, ?)',
+    'INSERT INTO packs (name, publisher, created_at, animated) VALUES (?, ?, ?, ?)',
     name.trim(),
     publisher.trim(),
     Date.now(),
+    animated ? 1 : 0,
   );
   return result.lastInsertRowId;
 }

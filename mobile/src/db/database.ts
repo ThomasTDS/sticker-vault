@@ -2,7 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 export const DATABASE_NAME = 'sticker-vault.db';
 
-const DATABASE_VERSION = 3;
+const DATABASE_VERSION = 4;
 
 export async function migrateDatabase(db: SQLiteDatabase) {
   const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
@@ -48,6 +48,11 @@ export async function migrateDatabase(db: SQLiteDatabase) {
       ALTER TABLE stickers ADD COLUMN use_count INTEGER NOT NULL DEFAULT 0;
       ALTER TABLE stickers ADD COLUMN last_used_at INTEGER;
     `);
+  }
+
+  if (currentVersion < 4) {
+    // Animated drawers only hold animated stickers: WhatsApp does not accept mixed packs.
+    await db.execAsync('ALTER TABLE packs ADD COLUMN animated INTEGER NOT NULL DEFAULT 0;');
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

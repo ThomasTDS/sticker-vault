@@ -1,7 +1,7 @@
 import { router, useTheme } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { createPack, PACK_NAME_MAX_LENGTH, PACK_PUBLISHER_MAX_LENGTH } from '@/db/packs';
 import { palette } from '@/theme/colors';
@@ -13,6 +13,7 @@ export default function NewPackScreen() {
   const [publisher, setPublisher] = useState('');
   const [showErrors, setShowErrors] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [animated, setAnimated] = useState(false);
 
   const nameMissing = name.trim().length === 0;
   const publisherMissing = publisher.trim().length === 0;
@@ -23,7 +24,7 @@ export default function NewPackScreen() {
       return;
     }
     setSaving(true);
-    const id = await createPack(db, name, publisher);
+    const id = await createPack(db, name, publisher, animated);
     router.replace({ pathname: '/gavetas/[id]', params: { id } });
   }
 
@@ -67,6 +68,23 @@ export default function NewPackScreen() {
         )}
       </View>
 
+      <View style={[styles.animatedRow, { borderColor: colors.border, backgroundColor: colors.card }]}>
+        <View style={styles.animatedText}>
+          <Text style={[styles.label, { color: colors.text }]}>Gaveta animada</Text>
+          <Text style={styles.animatedHint}>
+            Guarda figurinhas animadas feitas a partir de vídeos curtos. O WhatsApp não mistura figurinhas animadas e
+            estáticas no mesmo pacote.
+          </Text>
+        </View>
+        <Switch
+          testID="new-pack-animated-switch"
+          value={animated}
+          onValueChange={setAnimated}
+          trackColor={{ false: palette.brownBorder, true: palette.goldDeep }}
+          thumbColor={animated ? palette.gold : palette.creamMuted}
+        />
+      </View>
+
       <Pressable
         testID="new-pack-submit-button"
         onPress={handleSubmit}
@@ -101,6 +119,22 @@ const styles = StyleSheet.create({
   },
   error: {
     fontSize: 14,
+  },
+  animatedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 12,
+    padding: 14,
+  },
+  animatedText: {
+    flex: 1,
+    gap: 4,
+  },
+  animatedHint: {
+    color: palette.creamMuted,
+    fontSize: 13,
   },
   primaryButton: {
     alignItems: 'center',

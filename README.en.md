@@ -44,6 +44,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Most used:** the stickers shared most from the app show up on a home screen shelf, with their share count.
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
+- **Animated stickers:** create an animated drawer and turn short gallery videos into animated stickers (512x512 animated WebP, up to 10 s and 500 KB), generated on the device with libwebp.
 - **Sticker maker:** pick a photo, remove the background automatically (ML Kit, processed on the device) and add top and bottom captions, with a live preview.
 - **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient can tap the file and choose Sticker Vault in "Open with", share the file with Sticker Vault through another app's "Share" menu (WhatsApp, Drive, Files, etc.) or use "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
 - **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
@@ -53,7 +54,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 
 | Layer | Technologies |
 | --- | --- |
-| App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, ML Kit (Kotlin) |
+| App | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, ML Kit and libwebp (Kotlin/C via JNI) |
 | Tests | WebdriverIO 10, Appium 3, UiAutomator2 driver, Cucumber (BDD), TypeScript |
 | CI | GitHub Actions, Android emulator (android-emulator-runner), JUnit report |
 | Platform | Android (distributed directly as an APK, no app store) |
@@ -77,7 +78,7 @@ sticker-vault/
     ├── step-definitions/    # Step implementations
     ├── pageobjects/         # Page Objects (app screens, photo picker and dialogs)
     ├── support/             # Device utilities (app reset, image upload)
-    ├── fixtures/            # Images used by the tests
+    ├── fixtures/            # Images and video used by the tests
     ├── reports/             # Screenshots of failed steps (generated, not versioned)
     └── wdio.conf.ts         # WebdriverIO and Appium configuration
 ```
@@ -212,6 +213,7 @@ Current coverage:
 | Gallery stickers | Add stickers; reach the WhatsApp minimum; remove a sticker |
 | Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
 | Favorites and most used | Mark a favorite; unmark a favorite; share through Android; most-used ordering |
+| Animated drawers | Create an animated drawer; turn videos into animated stickers; share and receive it back keeping the animation |
 | Sticker maker | Saving blocked without a photo; sticker with meme-style captions; remove and restore the background (`@modelo-ml`) |
 | Sharing drawers | Share as a file; blocked for an empty drawer; import a received drawer with emojis; reject an invalid file |
 | Open with | Open a drawer from the Android Files app; warn when the opened file is not a drawer |
@@ -307,7 +309,7 @@ On CI each feature gets one automatic retry to absorb emulator instability. The 
 
 ## Next steps
 
-- Animated stickers.
+- Animated stickers from GIFs.
 
 ## Author
 

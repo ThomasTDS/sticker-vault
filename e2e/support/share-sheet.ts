@@ -8,14 +8,24 @@ export async function waitForShareSheet() {
   });
 }
 
-// Picks an app in the share sheet by its label; on small screens the app row may need to be scrolled into view.
+// Picks an app in the share sheet by its label. The app row can take a while to load (larger files) and,
+// on small screens, may be below the fold: the sheet is then swiped up to expand it. UiScrollable is not used
+// because it first scrolls back to the top, and swiping down closes the share sheet.
 export async function chooseShareTarget(label: string) {
   await waitForShareSheet();
   const target = $(`android=new UiSelector().resourceId("android:id/text1").text("${label}")`);
-  if (!(await target.isDisplayed())) {
-    await $(
-      `android=new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(new UiSelector().text("${label}"))`,
-    ).isExisting();
+  const visible = await target.waitForDisplayed({ timeout: 15000 }).catch(() => false);
+  if (!visible) {
+    const { width, height } = await browser.getWindowSize();
+    await browser.execute('mobile: swipeGesture', {
+      left: 0,
+      top: Math.round(height / 2),
+      width,
+      height: Math.round(height / 2),
+      direction: 'up',
+      percent: 0.75,
+    });
+    await target.waitForDisplayed({ timeout: 15000 });
   }
   await target.click();
 }
