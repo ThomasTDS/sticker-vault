@@ -1,4 +1,4 @@
-import { $, $$ } from '@wdio/globals';
+import { $, $$, browser } from '@wdio/globals';
 
 // Android system photo picker (part of the MediaProvider module, outside the app).
 class PhotoPicker {
@@ -11,8 +11,12 @@ class PhotoPicker {
   }
 
   // Photos are listed from newest to oldest, so the first ones are the most recently added.
+  // Media scanning is asynchronous, so the picker may open before every pushed file is listed.
   async selectNewest(count: number) {
     await this.thumbnails[0].waitForDisplayed();
+    await browser.waitUntil(async () => (await this.thumbnails.length) >= count, {
+      timeoutMsg: `The photo picker did not list ${count} items`,
+    });
     for (let index = 0; index < count; index++) {
       await this.thumbnails[index].click();
     }
