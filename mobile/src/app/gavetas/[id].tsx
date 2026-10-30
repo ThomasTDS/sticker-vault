@@ -5,6 +5,8 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ANIMATION_MAX_MS, getAnimationDuration } from '../../../modules/sticker-maker';
+import { type Segment, SegmentPicker } from '@/components/segment-picker';
 import {
   addSticker,
   deletePack,
@@ -37,6 +39,11 @@ export default function PackScreen() {
   const [stickers, setStickers] = useState<Sticker[]>([]);
   const [processing, setProcessing] = useState(false);
   const [sending, setSending] = useState(false);
+  const [segmentRequest, setSegmentRequest] = useState<{
+    mediaUri: string;
+    durationMs: number;
+    resolve: (segment: Segment | null) => void;
+  } | null>(null);
 
   const load = useCallback(async () => {
     const [loadedPack, loadedStickers] = await Promise.all([getPack(db, packId), listStickers(db, packId)]);
@@ -52,6 +59,26 @@ export default function PackScreen() {
 
   const remaining = PACK_MAX_STICKERS - stickers.length;
   const missingForWhatsApp = Math.max(PACK_MIN_STICKERS - stickers.length, 0);
+
+  // Opens the segment picker and waits for the user's choice (null when the file is skipped).
+  function requestSegment(mediaUri: string, durationMs: number) {
+    return new Promise<Segment | null>((resolve) => setSegmentRequest({ mediaUri, durationMs, resolve }));
+  }
+
+  function finishSegmentRequest(segment: Segment | null) {
+    segmentRequest?.resolve(segment);
+    setSegmentRequest(null);
+  }
+
+  // Media up to 10 s becomes a sticker whole; longer media asks which segment to use.
+  async function createAnimatedFromMedia(mediaUri: string) {
+    const durationMs = await getAnimationDuration(mediaUri);
+    const segment = durationMs > ANIMATION_MAX_MS ? await requestSegment(mediaUri, durationMs) : undefined;
+    if (segment === null) {
+      return null;
+    }
+    return createAnimatedStickerFile(packId, mediaUri, segment);
+  }
 
   async function handleAddFromGallery() {
     if (remaining <= 0) {
@@ -78,10 +105,10 @@ export default function PackScreen() {
         if (animated && asset.type === 'image' && asset.mimeType && asset.mimeType !== 'image/gif') {
           throw Object.assign(new Error('Not an animated image'), { code: 'ERR_NOT_ANIMATED' });
         }
-        const fileUri = animated
-          ? await createAnimatedStickerFile(packId, asset.uri)
-          : await createStickerFile(packId, asset);
-        await addSticker(db, packId, fileUri);
+        const fileUri = animated ? await createAnimatedFromMedia(asset.uri) : await createStickerFile(packId, asset);
+        if (fileUri) {
+          await addSticker(db, packId, fileUri);
+        }
       }
     } catch (error) {
       const code = (error as { code?: string }).code;
@@ -172,6 +199,14 @@ export default function PackScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ title: pack.name }} />
+      {segmentRequest && (
+        <SegmentPicker
+          mediaUri={segmentRequest.mediaUri}
+          durationMs={segmentRequest.durationMs}
+          onConfirm={finishSegmentRequest}
+          onSkip={() => finishSegmentRequest(null)}
+        />
+      )}
 
       <View style={styles.header}>
         <Text testID="pack-name" style={[styles.name, { color: colors.text }]}>

@@ -38,15 +38,21 @@ export async function resetApp() {
 
 const FIXTURE_VIDEO = 'clip.mp4';
 const VIDEOS_DIR = '/sdcard/Movies/StickerVaultE2E';
+const FIXTURE_LONG_VIDEO = 'clip-longo.mp4';
 const FIXTURE_GIF = 'bolinha.gif';
 
-// Copies a fixture to the device gallery three times (name-1 to name-3), so the photo picker lists the copies
+// Copies a fixture to the device gallery (name-1, name-2...), so the photo picker lists the copies
 // as the most recent items. The files are scanned because videos are indexed without metadata (duration)
 // until then, and the photo picker hides them; for GIFs the scan is harmless.
-async function pushGalleryCopies(fixture: string, remoteDir: string, prepare = (content: Buffer) => content) {
+async function pushGalleryCopies(
+  fixture: string,
+  remoteDir: string,
+  copies = 3,
+  prepare = (content: Buffer) => content,
+) {
   const content = prepare(await readFile(path.resolve(import.meta.dirname, '../fixtures', fixture)));
   const { name, ext } = path.parse(fixture);
-  for (let index = 1; index <= 3; index++) {
+  for (let index = 1; index <= copies; index++) {
     const remotePath = `${remoteDir}/${name}-${index}${ext}`;
     await browser.pushFile(remotePath, content.toString('base64'));
     await browser.execute('mobile: broadcast', {
@@ -74,7 +80,11 @@ function withRecordingDateNow(content: Buffer) {
   return copy;
 }
 
-export const pushGalleryVideos = () => pushGalleryCopies(`videos/${FIXTURE_VIDEO}`, VIDEOS_DIR, withRecordingDateNow);
+export const pushGalleryVideos = () => pushGalleryCopies(`videos/${FIXTURE_VIDEO}`, VIDEOS_DIR, 3, withRecordingDateNow);
+
+// A single 12 s video, longer than WhatsApp's 10 s limit for animated stickers.
+export const pushGalleryLongVideo = () =>
+  pushGalleryCopies(`videos/${FIXTURE_LONG_VIDEO}`, VIDEOS_DIR, 1, withRecordingDateNow);
 
 export const pushGalleryGifs = () => pushGalleryCopies(`gifs/${FIXTURE_GIF}`, GALLERY_DIR);
 

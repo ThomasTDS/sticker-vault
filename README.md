@@ -44,7 +44,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Mais usadas:** as figurinhas mais compartilhadas pelo app aparecem numa prateleira da tela inicial, com a quantidade de compartilhamentos.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
-- **Figurinhas animadas:** crie uma gaveta animada e transforme vídeos curtos e GIFs da galeria em figurinhas animadas (WebP animado de 512x512, até 10 s e 500 KB), geradas no próprio aparelho com a libwebp.
+- **Figurinhas animadas:** crie uma gaveta animada e transforme vídeos curtos e GIFs da galeria em figurinhas animadas (WebP animado de 512x512, até 10 s e 500 KB), geradas no próprio aparelho com a libwebp. Para arquivos com mais de 10 s, você escolhe o trecho vendo o primeiro e o último quadro.
 - **Criador de figurinhas:** escolha uma foto, remova o fundo automaticamente (ML Kit, processado no próprio aparelho) e escreva textos em cima e embaixo, com prévia ao vivo.
 - **Compartilhar gavetas:** gere um arquivo `.stickervault` com as figurinhas, emojis e tags e mande por qualquer app. Quem recebe pode tocar no arquivo e escolher o Sticker Vault em "Abrir com", compartilhar o arquivo com o Sticker Vault pelo menu "Compartilhar" de outro app (WhatsApp, Drive, Arquivos etc.) ou usar "Importar gaveta" na tela inicial; as imagens recebidas são sempre reprocessadas para o formato do WhatsApp.
 - **Identidade visual:** tema escuro com fundo marrom, textos em creme, detalhes em dourado e o título na fonte Major Mono Display.
@@ -54,7 +54,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 
 | Camada | Tecnologias |
 | --- | --- |
-| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, ML Kit e libwebp (Kotlin/C via JNI) |
+| Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, Slider, ML Kit e libwebp (Kotlin/C via JNI) |
 | Testes | WebdriverIO 10, Appium 3, driver UiAutomator2, Cucumber (BDD), TypeScript |
 | CI | GitHub Actions, emulador Android (android-emulator-runner), relatório JUnit |
 | Plataforma | Android (distribuição direta por APK, sem loja) |
@@ -213,7 +213,7 @@ Cobertura atual:
 | Figurinhas da galeria | Adicionar figurinhas; completar o mínimo para o WhatsApp; remover figurinha |
 | Envio para o WhatsApp | Envio bloqueado abaixo do mínimo; envio liberado com 3 figurinhas; aviso de WhatsApp não instalado |
 | Favoritas e mais usadas | Favoritar; desfazer favorita; compartilhar pelo Android; ordenação das mais usadas |
-| Gavetas animadas | Criar gaveta animada; transformar vídeos e GIFs em figurinhas animadas; recusar foto parada; compartilhar e receber de volta mantendo a animação |
+| Gavetas animadas | Criar gaveta animada; transformar vídeos e GIFs em figurinhas animadas; recusar foto parada; escolher o trecho de vídeo longo ou pular o arquivo; compartilhar e receber de volta mantendo a animação |
 | Criador de figurinhas | Salvamento bloqueado sem foto; figurinha com texto estilo meme; remover e restaurar o fundo (`@modelo-ml`) |
 | Compartilhamento de gavetas | Compartilhar como arquivo; bloqueio em gaveta vazia; importar gaveta recebida com emojis; recusar arquivo inválido |
 | Abrir com | Abrir gaveta pelo app Arquivos do Android; avisar quando o arquivo aberto não é uma gaveta |
@@ -309,7 +309,7 @@ No CI, cada funcionalidade tem uma nova tentativa automática para absorver inst
 
 ## Próximos passos
 
-- Escolher o trecho do vídeo ou do GIF antes de animar.
+- Build do CI mais rápido, compilando a libwebp só para a arquitetura do emulador.
 
 ## Autor
 
