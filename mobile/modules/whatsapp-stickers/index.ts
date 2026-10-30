@@ -14,6 +14,8 @@ export type ReceivedSticker = {
 type WhatsAppStickersNativeModule = {
   isWhatsAppInstalled(): boolean;
   addStickerPack(identifier: string, name: string): Promise<AddStickerPackResult>;
+  isStickerPackAdded(identifier: string): Promise<boolean>;
+  openWhatsApp(): boolean;
   getReceivedStickersFolder(): string | null;
   pickReceivedStickersFolder(): Promise<string | null>;
   listReceivedStickers(treeUri: string, limit: number): Promise<ReceivedSticker[]>;
@@ -25,6 +27,12 @@ const WhatsAppStickers = requireNativeModule<WhatsAppStickersNativeModule>('What
 export const isWhatsAppInstalled = () => WhatsAppStickers.isWhatsAppInstalled();
 
 export const addStickerPack = (identifier: string, name: string) => WhatsAppStickers.addStickerPack(identifier, name);
+
+// Whether the user already added the pack to WhatsApp (or WhatsApp Business).
+export const isStickerPackAdded = (identifier: string) => WhatsAppStickers.isStickerPackAdded(identifier);
+
+// Opens WhatsApp on its last screen; false when it is not installed.
+export const openWhatsApp = () => WhatsAppStickers.openWhatsApp();
 
 // Folder where WhatsApp saves received stickers, if the user already granted access to it.
 export const getReceivedStickersFolder = () => WhatsAppStickers.getReceivedStickersFolder();

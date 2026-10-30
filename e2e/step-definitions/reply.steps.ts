@@ -55,6 +55,11 @@ When('eu digo que ela quer dizer {string}', async (emoji: string) => {
 
 When('eu toco na sugestão {int}', async (position: number) => {
   await ReplyPage.suggestion(position - 1).click();
+  await ReplyPage.sendSheet.waitForDisplayed();
+});
+
+When('eu mando a sugestão como imagem', async () => {
+  await ReplyPage.sendAsImageButton.click();
 });
 
 Then('devo ver o pedido de acesso às figurinhas recebidas', async () => {
@@ -85,6 +90,14 @@ Then('a sugestão {int} deve ser a figurinha {string}', async (position: number,
 
 Then('devo ver o aviso de que nenhuma figurinha combina', async () => {
   await expect(ReplyPage.emptySuggestions).toBeDisplayed();
+});
+
+Then('devo ver que a figurinha sugerida está na gaveta {string}', async (packName: string) => {
+  await expect(ReplyPage.sendPackName).toHaveText(packName);
+});
+
+Then('devo ver o aviso de que o WhatsApp não está instalado', async () => {
+  await expect(ReplyPage.sendNoWhatsApp).toBeDisplayed();
 });
 
 Then('o menu de compartilhamento deve abrir', async () => {

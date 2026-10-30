@@ -30,7 +30,17 @@ Funcionalidade: Responder figurinha
     E devo ver 2 sugestões de resposta
     E a sugestão 1 deve ser a figurinha "😂"
     E a sugestão 2 deve ser a figurinha "🤣"
-    Quando eu toco na sugestão 1
+
+  # O emulador não tem o WhatsApp: o envio como figurinha (gaveta adicionada e busca pelo emoji) é validado
+  # manualmente em um aparelho real.
+  Cenário: Mostrar onde está a figurinha sugerida e mandar como imagem
+    Dado que recebi no WhatsApp a figurinha "recebida-risada.webp"
+    E que dei acesso às figurinhas recebidas
+    Quando eu escolho a figurinha recebida mais recente
+    E eu toco na sugestão 1
+    Então devo ver que a figurinha sugerida está na gaveta "Reações"
+    E devo ver o aviso de que o WhatsApp não está instalado
+    Quando eu mando a sugestão como imagem
     Então o menu de compartilhamento deve abrir
 
   Cenário: Escolher o emoji de uma figurinha recebida sem emojis

@@ -51,6 +51,22 @@ class ReplyPage extends BasePage {
     return this.byTestId('reply-change-emoji');
   }
 
+  get sendSheet() {
+    return this.byTestId('reply-send-sheet');
+  }
+
+  get sendPackName() {
+    return this.byTestId('reply-send-pack-name');
+  }
+
+  get sendNoWhatsApp() {
+    return this.byTestId('reply-send-no-whatsapp');
+  }
+
+  get sendAsImageButton() {
+    return this.byTestId('reply-send-as-image');
+  }
+
   emojiOption(emoji: string) {
     return $(
       `android=new UiSelector().resourceIdMatches("reply-emoji-option-[0-9]+").childSelector(new UiSelector().text("${emoji}"))`,
