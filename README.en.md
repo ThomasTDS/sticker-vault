@@ -290,13 +290,14 @@ Funcionalidade: Tela inicial
 Every pull request to `main` is validated by GitHub Actions (`.github/workflows/ci.yml`), which can also be run manually from the **Actions** tab:
 
 1. **Type checking:** `npm ci` and `npm run typecheck` in `mobile/` and `e2e/`.
-2. **Android build and e2e tests:**
-   - installs JDK 17 and CMake 3.31.6 and builds the release APK only for the emulator architecture (x86_64), published as an artifact;
-   - starts an Android 14 emulator (API 34, `google_apis` image, the same one used locally) and runs the full suite;
-   - publishes the test results on the pull request itself;
+2. **Android build:** installs JDK 17 and CMake 3.31.6 and builds the release APK only for the emulator architecture (x86_64), published as an artifact.
+3. **e2e tests (1/2 and 2/2):** the suite is split between two Android 14 emulators (API 34, `google_apis` image, the same one used locally) running at the same time, each with the APK built in the previous step:
+   - the first half runs the features listed in `e2e/wdio.conf.ts` (`E2E_SHARD=1`) and the second runs all the others, so a new feature lands in the second half on its own;
+   - each half publishes its test results on the pull request itself;
    - on failure, attaches the screenshots and Appium logs.
+4. **Build Android e testes e2e:** sums up steps 2 and 3 in a single check.
 
-The `main` branch is protected: a pull request can only be merged once both CI checks pass.
+The `main` branch is protected: a pull request can only be merged once the **Verificação de tipos** and **Build Android e testes e2e** checks pass.
 
 After each merge, the workflow runs on `main` up to the build only, without the tests, to save the Gradle cache; the next pull requests start with the dependencies already downloaded.
 
@@ -313,7 +314,7 @@ On CI each feature gets one automatic retry to absorb emulator instability. The 
 
 ## Next steps
 
-- Split the e2e suite across two emulators running in parallel on CI.
+- Reuse an emulator snapshot between CI runs to shorten startup.
 
 ## Author
 

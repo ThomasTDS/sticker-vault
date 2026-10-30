@@ -6,11 +6,26 @@ const apkPath =
   process.env.APK_PATH ??
   path.resolve(import.meta.dirname, '../mobile/android/app/build/outputs/apk/release/app-release.apk');
 
+// On CI the suite is split between two emulators running in parallel (E2E_SHARD=1 or 2). The first one runs
+// the features listed here, chosen so both take about the same time; the second runs every other feature,
+// so a new feature is never left out.
+const FIRST_SHARD_FEATURES = [
+  'animadas',
+  'favoritas',
+  'compartilhar',
+  'criador',
+  'gavetas',
+  'home',
+  'receber',
+].map((name) => `./features/${name}.feature`);
+const shard = process.env.E2E_SHARD;
+
 export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
 
-  specs: ['./features/**/*.feature'],
+  specs: shard === '1' ? FIRST_SHARD_FEATURES : ['./features/**/*.feature'],
+  exclude: shard === '2' ? FIRST_SHARD_FEATURES : [],
   maxInstances: 1,
 
   capabilities: [
