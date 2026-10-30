@@ -45,6 +45,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 - **Remoção de figurinhas:** toque longo sobre a figurinha.
 - **Envio para o WhatsApp:** com 3 ou mais figurinhas, o botão "Mandar pro WhatsApp" abre a confirmação do próprio WhatsApp (ou do WhatsApp Business). O ícone da gaveta (96x96) é gerado a partir da primeira figurinha.
 - **Figurinhas animadas:** crie uma gaveta animada e transforme vídeos curtos e GIFs da galeria em figurinhas animadas (WebP animado de 512x512, até 10 s e 500 KB), geradas no próprio aparelho com a libwebp. Para arquivos com mais de 10 s, você escolhe o trecho vendo o primeiro e o último quadro.
+- **Responder figurinha:** escolha uma figurinha que chegou no WhatsApp e o app sugere as suas que combinam como resposta. Os emojis da figurinha recebida são lidos dos metadados que o WhatsApp grava no arquivo (ou escolhidos por você, quando ela não tem) e passam por um mapa de respostas (😂 pede 😂🤣💀, 😭 pede 🙏😭💔); as sugestões vêm ordenadas por esse mapa, depois favoritas e mais usadas. O acesso à pasta de figurinhas recebidas é dado uma única vez, e tudo é lido só no aparelho.
 - **Criador de figurinhas:** escolha uma foto, remova o fundo automaticamente (ML Kit, processado no próprio aparelho) e escreva textos em cima e embaixo, com prévia ao vivo.
 - **Compartilhar gavetas:** gere um arquivo `.stickervault` com as figurinhas, emojis e tags e mande por qualquer app. Quem recebe pode tocar no arquivo e escolher o Sticker Vault em "Abrir com", compartilhar o arquivo com o Sticker Vault pelo menu "Compartilhar" de outro app (WhatsApp, Drive, Arquivos etc.) ou usar "Importar gaveta" na tela inicial; as imagens recebidas são sempre reprocessadas para o formato do WhatsApp.
 - **Identidade visual:** tema escuro com fundo marrom, textos em creme, detalhes em dourado e o título na fonte Major Mono Display.
@@ -214,6 +215,7 @@ Cobertura atual:
 | Envio para o WhatsApp | Envio bloqueado abaixo do mínimo; envio liberado com 3 figurinhas; aviso de WhatsApp não instalado |
 | Favoritas e mais usadas | Favoritar; desfazer favorita; compartilhar pelo Android; ordenação das mais usadas |
 | Gavetas animadas | Criar gaveta animada; transformar vídeos e GIFs em figurinhas animadas; recusar foto parada; escolher o trecho de vídeo longo ou pular o arquivo; compartilhar e receber de volta mantendo a animação |
+| Responder figurinha | Pedir acesso às figurinhas recebidas uma única vez; sugerir respostas pelos emojis da figurinha recebida, na ordem do mapa, e mandar pelo Android; escolher o emoji de uma figurinha sem emojis; avisar quando nenhuma figurinha combina |
 | Criador de figurinhas | Salvamento bloqueado sem foto; figurinha com texto estilo meme; remover e restaurar o fundo (`@modelo-ml`) |
 | Compartilhamento de gavetas | Compartilhar como arquivo; bloqueio em gaveta vazia; importar gaveta recebida com emojis; recusar arquivo inválido |
 | Abrir com | Abrir gaveta pelo app Arquivos do Android; avisar quando o arquivo aberto não é uma gaveta |
