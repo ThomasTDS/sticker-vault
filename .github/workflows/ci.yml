@@ -55,6 +55,42 @@ jobs:
           npm ci
           npm run typecheck
 
+  # Rules that do not need a device: TypeScript (Jest) and the native modules' Kotlin code (JUnit on the JVM).
+  # Runs alongside the build, so it does not lengthen the run.
+  unit:
+    name: Testes unitários
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Instalar dependências
+        run: npm ci --prefix mobile
+
+      - name: Testes do app (Jest)
+        working-directory: mobile
+        run: npm test -- --ci
+
+      - name: Testes dos módulos nativos (JUnit)
+        working-directory: mobile
+        run: |
+          npm run prebuild
+          cd android
+          ./gradlew :whatsapp-stickers:testDebugUnitTest -PreactNativeArchitectures=${EMULATOR_ARCH}
+
   build:
     name: Build Android
     needs: typecheck
@@ -179,22 +215,23 @@ jobs:
           retention-days: 7
 
   # Keeps the name of the check required by the main branch protection, so splitting the suite did not
-  # change it: it passes only when the build and both halves of the suite passed (on main, without e2e,
-  # only the build counts).
+  # change it: it passes only when the unit tests, the build and both halves of the suite passed (on main,
+  # without e2e, only the unit tests and the build count).
   result:
     name: Build Android e testes e2e
-    needs: [build, e2e]
+    needs: [unit, build, e2e]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Conferir o build e os testes
         env:
+          UNIT_RESULT: ${{ needs.unit.result }}
           BUILD_RESULT: ${{ needs.build.result }}
           E2E_RESULT: ${{ needs.e2e.result }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
-          echo "Build: $BUILD_RESULT / e2e: $E2E_RESULT"
-          if [ "$BUILD_RESULT" != success ]; then exit 1; fi
+          echo "Unitários: $UNIT_RESULT / Build: $BUILD_RESULT / e2e: $E2E_RESULT"
+          if [ "$UNIT_RESULT" != success ] || [ "$BUILD_RESULT" != success ]; then exit 1; fi
           if [ "$EVENT_NAME" = push ] && [ "$E2E_RESULT" = skipped ]; then exit 0; fi
           [ "$E2E_RESULT" = success ]

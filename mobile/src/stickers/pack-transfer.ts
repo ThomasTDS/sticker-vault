@@ -1,7 +1,7 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+import { strToU8, unzipSync, zipSync } from 'fflate';
 
 import {
   addSticker,
@@ -16,68 +16,30 @@ import {
   updateStickerDetails,
 } from '@/db/packs';
 import {
+  asStrings,
+  fileSafeName,
+  isAnimatedSticker,
+  MANIFEST_NAME,
+  PACK_FILE_FORMAT,
+  PACK_FILE_VERSION,
+  PackFileError,
+  readManifest,
+  type PackManifest,
+} from '@/stickers/pack-manifest';
+import {
   ANIMATED_STICKER_MAX_BYTES,
   createStickerFileFromUri,
   deletePackFiles,
   storeAnimatedStickerFile,
 } from '@/stickers/sticker-files';
 
-// A shared drawer is a zip file with a manifest.json and one image per sticker.
+// A shared drawer is a zip file with a manifest.json and one image per sticker (see pack-manifest.ts).
 export const PACK_FILE_EXTENSION = '.stickervault';
-const PACK_FILE_FORMAT = 'sticker-vault-pack';
-const PACK_FILE_VERSION = 1;
-const MANIFEST_NAME = 'manifest.json';
 const MAX_IMPORT_BYTES = 15 * 1024 * 1024;
 
-type PackManifest = {
-  format: typeof PACK_FILE_FORMAT;
-  version: number;
-  name: string;
-  publisher: string;
-  // Absent in files from before animated drawers existed, which are all static.
-  animated?: boolean;
-  stickers: { file: string; emojis: string[]; tags: string[] }[];
-};
+export { PackFileError };
 
 export type ImportResult = { packId: number; imported: number; skipped: number };
-
-export class PackFileError extends Error {
-  constructor(public readonly reason: 'invalid-file' | 'no-stickers') {
-    super(reason);
-  }
-}
-
-function fileSafeName(name: string) {
-  return (
-    name
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^\w-]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'gaveta'
-  );
-}
-
-const STICKER_SIZE = 512;
-
-// Checks the WebP header: an extended (VP8X) 512x512 file with the animation flag, within WhatsApp's size limit.
-function isAnimatedSticker(bytes: Uint8Array) {
-  const text = (start: number, length: number) => String.fromCharCode(...bytes.subarray(start, start + length));
-  const uint24 = (start: number) => bytes[start] | (bytes[start + 1] << 8) | (bytes[start + 2] << 16);
-  const ANIMATION_FLAG = 0x02;
-  return (
-    bytes.length >= 30 &&
-    bytes.length <= ANIMATED_STICKER_MAX_BYTES &&
-    text(0, 4) === 'RIFF' &&
-    text(8, 4) === 'WEBP' &&
-    text(12, 4) === 'VP8X' &&
-    (bytes[20] & ANIMATION_FLAG) !== 0 &&
-    uint24(24) + 1 === STICKER_SIZE &&
-    uint24(27) + 1 === STICKER_SIZE
-  );
-}
-
-const asStrings = (value: unknown) =>
-  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 
 export async function exportPack(db: SQLiteDatabase, packId: number): Promise<string> {
   const pack = await getPack(db, packId);
@@ -119,25 +81,6 @@ export async function sharePack(db: SQLiteDatabase, packId: number) {
   await Sharing.shareAsync(uri, { mimeType: 'application/octet-stream', dialogTitle: 'Compartilhar gaveta' });
 }
 
-function readManifest(entries: Record<string, Uint8Array>): PackManifest {
-  const raw = entries[MANIFEST_NAME];
-  if (!raw) {
-    throw new PackFileError('invalid-file');
-  }
-  const manifest = JSON.parse(strFromU8(raw));
-  if (
-    manifest?.format !== PACK_FILE_FORMAT ||
-    typeof manifest.version !== 'number' ||
-    manifest.version > PACK_FILE_VERSION ||
-    typeof manifest.name !== 'string' ||
-    manifest.name.trim().length === 0 ||
-    !Array.isArray(manifest.stickers)
-  ) {
-    throw new PackFileError('invalid-file');
-  }
-  return manifest;
-}
-
 // Images from a shared file are never trusted as they are: static ones are re-encoded as WhatsApp stickers,
 // and animated ones (which re-encoding would flatten) must pass the animated sticker header and size check.
 export async function importPackFromFile(db: SQLiteDatabase, file: File): Promise<ImportResult> {
@@ -174,7 +117,7 @@ export async function importPackFromFile(db: SQLiteDatabase, file: File): Promis
     try {
       let fileUri: string;
       if (animated) {
-        if (!isAnimatedSticker(data)) {
+        if (!isAnimatedSticker(data, ANIMATED_STICKER_MAX_BYTES)) {
           throw new PackFileError('invalid-file');
         }
         fileUri = await storeAnimatedStickerFile(packId, data);

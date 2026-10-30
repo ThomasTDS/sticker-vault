@@ -56,7 +56,7 @@ O Sticker Vault é o cofre das suas figurinhas: cada pacote é uma **gaveta**.
 | Camada | Tecnologias |
 | --- | --- |
 | Aplicativo | React Native, Expo (SDK 58), Expo Router, TypeScript, expo-sqlite, expo-image-picker, expo-image-manipulator, expo-sharing, Slider, ML Kit e libwebp (Kotlin/C via JNI) |
-| Testes | WebdriverIO 10, Appium 3, driver UiAutomator2, Cucumber (BDD), TypeScript |
+| Testes | Unitários: Jest (jest-expo) e JUnit 4 (Kotlin); e2e: WebdriverIO 10, Appium 3, driver UiAutomator2, Cucumber (BDD), TypeScript |
 | CI | GitHub Actions, emulador Android (android-emulator-runner), relatório JUnit |
 | Plataforma | Android (distribuição direta por APK, sem loja) |
 
@@ -196,6 +196,31 @@ npm run typecheck
 
 ## Executando os testes
 
+### Testes unitários
+
+Cobrem as regras que não precisam de aparelho e rodam em segundos, sem emulador:
+
+```powershell
+cd mobile
+npm test
+```
+
+| Módulo | O que é testado |
+| --- | --- |
+| `src/stickers/reply-map.ts` | Emojis de resposta na ordem do mapa, emoji fora do mapa, seletor de variação (❤ e ❤️), ordem das sugestões (melhor emoji, favoritas, mais usadas), limite de sugestões e emoji a buscar no WhatsApp |
+| `src/db/packs.ts` | Texto de busca sem maiúsculas e acentos; separação, limpeza e remoção de tags repetidas |
+| `src/stickers/pack-manifest.ts` | Validação do manifesto do arquivo `.stickervault` (formato, versão, nome, lista de figurinhas), cabeçalho do WebP animado (512x512, marca de animação, limite de tamanho) e nome seguro para o arquivo |
+| `StickerMetadata.kt` (módulo `whatsapp-stickers`) | Leitura dos emojis no bloco EXIF da figurinha recebida, blocos de tamanho ímpar, JSON sem emojis ou quebrado, arquivo que não é WebP e bloco truncado |
+
+Os testes do módulo nativo rodam na JVM, depois do `prebuild`:
+
+```powershell
+cd mobile\android
+.\gradlew :whatsapp-stickers:testDebugUnitTest
+```
+
+### Testes e2e
+
 Com o emulador ligado e o APK de release gerado:
 
 ```powershell
@@ -265,6 +290,7 @@ npm run typecheck
 ## Estratégia de testes
 
 - **Shift-left:** cada funcionalidade nova do aplicativo é entregue junto com seus cenários automatizados.
+- **Pirâmide de testes:** regras puras (mapa de respostas, busca, validação de arquivos, leitura de metadados) são cobertas por testes unitários, que dão retorno em segundos; os cenários e2e validam os fluxos no aparelho. Para isso, a lógica é separada do acesso a arquivos e banco (por exemplo, `pack-manifest.ts` fora de `pack-transfer.ts`, e `StickerMetadata` fora de `ReceivedStickers`).
 - **BDD com Cucumber:** os cenários são escritos em Gherkin, em português (`# language: pt`), e servem como documentação viva do comportamento do aplicativo.
 - **Page Objects:** seletores e ações de cada tela ficam em classes próprias em `e2e/pageobjects/`; os passos apenas chamam esses métodos.
 - **Seletores estáveis:** todo elemento verificado pelos testes recebe um `testID` no aplicativo. No Android, o `testID` é exposto como `resource-id`, e o método `byTestId()` da `BasePage` localiza o elemento por ele.
@@ -290,16 +316,17 @@ Funcionalidade: Tela inicial
 Todo pull request para a `main` é validado pelo GitHub Actions (`.github/workflows/ci.yml`), que também pode ser executado manualmente pela aba **Actions**:
 
 1. **Verificação de tipos:** `npm ci` e `npm run typecheck` em `mobile/` e `e2e/`.
-2. **Build Android:** instala o JDK 17 e o CMake 3.31.6 e gera o APK de release só para a arquitetura do emulador (x86_64), publicado como artefato.
-3. **Testes e2e (1/2 e 2/2):** a suíte é dividida entre dois emuladores Android 14 (API 34, imagem `google_apis`, a mesma usada localmente) que rodam ao mesmo tempo, cada um com o APK gerado no passo anterior:
+2. **Testes unitários:** Jest no app e JUnit no módulo nativo `whatsapp-stickers`, em paralelo com o build.
+3. **Build Android:** instala o JDK 17 e o CMake 3.31.6 e gera o APK de release só para a arquitetura do emulador (x86_64), publicado como artefato.
+4. **Testes e2e (1/2 e 2/2):** a suíte é dividida entre dois emuladores Android 14 (API 34, imagem `google_apis`, a mesma usada localmente) que rodam ao mesmo tempo, cada um com o APK gerado no passo anterior:
    - a primeira metade roda as funcionalidades listadas em `e2e/wdio.conf.ts` (`E2E_SHARD=1`) e a segunda roda todas as outras, então uma funcionalidade nova entra sozinha na segunda;
    - cada metade publica o resultado dos testes no próprio pull request;
    - em caso de falha, anexa as capturas de tela e os logs do Appium.
-4. **Build Android e testes e2e:** resume os passos 2 e 3 num único check.
+5. **Build Android e testes e2e:** resume os passos 2, 3 e 4 num único check.
 
 A branch `main` é protegida: o merge de um pull request só é liberado com os checks **Verificação de tipos** e **Build Android e testes e2e** aprovados.
 
-Depois de cada merge, o workflow roda na `main` só até o build, sem os testes, para salvar o cache do Gradle; os pull requests seguintes começam com as dependências já baixadas.
+Depois de cada merge, o workflow roda na `main` só até o build e os testes unitários, sem os e2e, para salvar o cache do Gradle; os pull requests seguintes começam com as dependências já baixadas.
 
 No CI, cada funcionalidade tem uma nova tentativa automática para absorver instabilidades do emulador. O cenário `@modelo-ml` não roda no CI.
 

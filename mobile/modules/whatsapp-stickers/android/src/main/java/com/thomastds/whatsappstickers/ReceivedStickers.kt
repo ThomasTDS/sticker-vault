@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
-import org.json.JSONObject
 
 // Reads the stickers WhatsApp saves when they arrive in a chat. The folder is granted once by the user
 // through the system folder picker (Storage Access Framework); apps cannot read it directly.
@@ -65,49 +64,9 @@ object ReceivedStickers {
     return stickers.sortedByDescending { it.modifiedAt }.take(limit)
   }
 
-  // WhatsApp stickers carry, in the WebP EXIF chunk, a JSON with the emojis chosen by the pack creator:
-  // {"sticker-pack-id": "...", "emojis": ["😂"]}. Stickers without it return an empty list.
+  // Emojis the pack creator attached to the sticker (see StickerMetadata).
   fun emojis(context: Context, uri: String): List<String> {
     val bytes = context.contentResolver.openInputStream(Uri.parse(uri))?.use { it.readBytes() } ?: return emptyList()
-    val exif = findChunk(bytes, "EXIF") ?: return emptyList()
-    val start = exif.indexOfFirst { it == '{'.code.toByte() }
-    val end = exif.indexOfLast { it == '}'.code.toByte() }
-    if (start < 0 || end <= start) {
-      return emptyList()
-    }
-    return try {
-      val emojis = JSONObject(String(exif, start, end - start + 1, Charsets.UTF_8)).optJSONArray("emojis")
-        ?: return emptyList()
-      (0 until emojis.length()).map { emojis.getString(it) }.filter { it.isNotBlank() }
-    } catch (_: Exception) {
-      emptyList()
-    }
-  }
-
-  // WebP is a RIFF file: "RIFF", size, "WEBP", then chunks of id (4 bytes), little-endian size and data.
-  private fun findChunk(bytes: ByteArray, id: String): ByteArray? {
-    if (bytes.size < 12 || String(bytes, 0, 4, Charsets.US_ASCII) != "RIFF" ||
-      String(bytes, 8, 4, Charsets.US_ASCII) != "WEBP"
-    ) {
-      return null
-    }
-    var offset = 12
-    while (offset + 8 <= bytes.size) {
-      val chunkId = String(bytes, offset, 4, Charsets.US_ASCII)
-      val size = (bytes[offset + 4].toInt() and 0xFF) or
-        ((bytes[offset + 5].toInt() and 0xFF) shl 8) or
-        ((bytes[offset + 6].toInt() and 0xFF) shl 16) or
-        ((bytes[offset + 7].toInt() and 0xFF) shl 24)
-      val dataStart = offset + 8
-      if (size < 0 || dataStart + size > bytes.size) {
-        return null
-      }
-      if (chunkId == id) {
-        return bytes.copyOfRange(dataStart, dataStart + size)
-      }
-      // Chunks are padded to an even size.
-      offset = dataStart + size + (size and 1)
-    }
-    return null
+    return StickerMetadata.emojis(bytes)
   }
 }
