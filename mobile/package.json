@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo-google-fonts/major-mono-display": "^0.4.1",
+    "@react-native-community/slider": "5.2.1",
     "expo": "~58.0.20",
     "expo-constants": "~58.0.13",
     "expo-dev-client": "~58.0.16",

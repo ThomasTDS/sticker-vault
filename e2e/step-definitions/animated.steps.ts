@@ -4,7 +4,8 @@ import HomePage from '../pageobjects/home.page.ts';
 import NewPackPage from '../pageobjects/new-pack.page.ts';
 import PackPage from '../pageobjects/pack.page.ts';
 import PhotoPicker from '../pageobjects/photo.picker.ts';
-import { pushGalleryGifs, pushGalleryImages, pushGalleryVideos } from '../support/device.ts';
+import SegmentPicker from '../pageobjects/segment.picker.ts';
+import { pushGalleryGifs, pushGalleryImages, pushGalleryLongVideo, pushGalleryVideos } from '../support/device.ts';
 
 // Each video or GIF is decoded and encoded as an animated WebP on the device, which can take a while.
 const ANIMATION_TIMEOUT_MS = 240000;
@@ -50,4 +51,29 @@ Then('devo ver a indicação {string}', async (text: string) => {
 
 Then('não devo ver o botão de criar figurinha', async () => {
   await expect(PackPage.createStickerButton).not.toBeDisplayed();
+});
+
+When('eu escolho um vídeo de 12 segundos da galeria', async () => {
+  await pushGalleryLongVideo();
+  await PackPage.addStickersButton.click();
+  await PhotoPicker.selectNewest(1);
+  await SegmentPicker.waitForDialog();
+});
+
+Then('devo ver o trecho {string}', async (range: string) => {
+  await expect(SegmentPicker.range).toHaveText(range);
+});
+
+When('eu começo o trecho em {int} segundo(s)', async (seconds: number) => {
+  await SegmentPicker.setStart(seconds * 1000);
+});
+
+When('eu confirmo o trecho', { timeout: ANIMATION_TIMEOUT_MS + 60000 }, async () => {
+  await SegmentPicker.confirmButton.click();
+  await PackPage.waitForStickersSaved(ANIMATION_TIMEOUT_MS);
+});
+
+When('eu pulo o arquivo', async () => {
+  await SegmentPicker.skipButton.click();
+  await PackPage.waitForStickersSaved();
 });

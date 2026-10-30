@@ -26,11 +26,15 @@ function newStickerFile(packId: number) {
   return new File(directory, `${Date.now()}-${Math.round(Math.random() * 1e6)}.webp`);
 }
 
-// Converts a short video or an animated GIF into an animated sticker (done natively with libwebp)
-// and stores it in the drawer.
-export async function createAnimatedStickerFile(packId: number, mediaUri: string): Promise<string> {
+// Converts a segment of a short video or an animated GIF into an animated sticker (done natively with libwebp)
+// and stores it in the drawer. Without a segment, the first 10 s are used.
+export async function createAnimatedStickerFile(
+  packId: number,
+  mediaUri: string,
+  segment?: { startMs: number; lengthMs: number },
+): Promise<string> {
   const destination = newStickerFile(packId);
-  new File(await createAnimatedSticker(mediaUri)).move(destination);
+  new File(await createAnimatedSticker(mediaUri, segment?.startMs, segment?.lengthMs)).move(destination);
   return destination.uri;
 }
 
