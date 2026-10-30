@@ -290,13 +290,14 @@ Funcionalidade: Tela inicial
 Todo pull request para a `main` é validado pelo GitHub Actions (`.github/workflows/ci.yml`), que também pode ser executado manualmente pela aba **Actions**:
 
 1. **Verificação de tipos:** `npm ci` e `npm run typecheck` em `mobile/` e `e2e/`.
-2. **Build Android e testes e2e:**
-   - instala o JDK 17 e o CMake 3.31.6 e gera o APK de release só para a arquitetura do emulador (x86_64), publicado como artefato;
-   - sobe um emulador Android 14 (API 34, imagem `google_apis`, a mesma usada localmente) e executa a suíte completa;
-   - publica o resultado dos testes no próprio pull request;
+2. **Build Android:** instala o JDK 17 e o CMake 3.31.6 e gera o APK de release só para a arquitetura do emulador (x86_64), publicado como artefato.
+3. **Testes e2e (1/2 e 2/2):** a suíte é dividida entre dois emuladores Android 14 (API 34, imagem `google_apis`, a mesma usada localmente) que rodam ao mesmo tempo, cada um com o APK gerado no passo anterior:
+   - a primeira metade roda as funcionalidades listadas em `e2e/wdio.conf.ts` (`E2E_SHARD=1`) e a segunda roda todas as outras, então uma funcionalidade nova entra sozinha na segunda;
+   - cada metade publica o resultado dos testes no próprio pull request;
    - em caso de falha, anexa as capturas de tela e os logs do Appium.
+4. **Build Android e testes e2e:** resume os passos 2 e 3 num único check.
 
-A branch `main` é protegida: o merge de um pull request só é liberado com os dois checks do CI aprovados.
+A branch `main` é protegida: o merge de um pull request só é liberado com os checks **Verificação de tipos** e **Build Android e testes e2e** aprovados.
 
 Depois de cada merge, o workflow roda na `main` só até o build, sem os testes, para salvar o cache do Gradle; os pull requests seguintes começam com as dependências já baixadas.
 
@@ -313,7 +314,7 @@ No CI, cada funcionalidade tem uma nova tentativa automática para absorver inst
 
 ## Próximos passos
 
-- Dividir a suíte e2e entre dois emuladores em paralelo no CI.
+- Reaproveitar um snapshot do emulador entre execuções do CI para encurtar a inicialização.
 
 ## Autor
 

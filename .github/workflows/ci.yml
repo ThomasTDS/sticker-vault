@@ -55,14 +55,11 @@ jobs:
           npm ci
           npm run typecheck
 
-  android:
-    name: Build Android e testes e2e
+  build:
+    name: Build Android
     needs: typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 90
-    permissions:
-      contents: read
-      checks: write
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
 
@@ -70,9 +67,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: |
-            mobile/package-lock.json
-            e2e/package-lock.json
+          cache-dependency-path: mobile/package-lock.json
 
       - uses: actions/setup-java@v6
         with:
@@ -81,25 +76,16 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      # The runner's avdmanager is older than the SDK repository ("SDK XML version 4") and intermittently
-      # fails to create the AVD with "hwMap is null", so the command-line tools are updated first.
-      - name: Atualizar as ferramentas de linha de comando do Android SDK
-        run: |
-          curl -sSfL -o "$RUNNER_TEMP/cmdline-tools.zip"             "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_BUILD}_latest.zip"
-          rm -rf "$ANDROID_HOME/cmdline-tools/latest"
-          unzip -q "$RUNNER_TEMP/cmdline-tools.zip" -d "$RUNNER_TEMP/cmdline-tools"
-          mv "$RUNNER_TEMP/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+      - uses: ./.github/actions/android-cmdline-tools
+        with:
+          build: ${{ env.CMDLINE_TOOLS_BUILD }}
 
       # The project pins CMake 3.31.6 (see mobile/plugins/with-cmake-version.js).
       - name: Instalar CMake do Android SDK
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "cmake;${CMAKE_VERSION}" > /dev/null
 
       - name: Instalar dependências
-        run: |
-          npm ci --prefix mobile
-          npm ci --prefix e2e
+        run: npm ci --prefix mobile
 
       - name: Gerar o APK de release
         working-directory: mobile
@@ -115,17 +101,55 @@ jobs:
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7
 
+  # The suite is split between two emulators running at the same time (see E2E_SHARD in e2e/wdio.conf.ts).
+  e2e:
+    name: Testes e2e (${{ matrix.shard }}/2)
+    needs: build
+    if: ${{ github.event_name != 'push' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      # One emulator failing should not cancel the other: its report is still useful.
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - uses: ./.github/actions/android-cmdline-tools
+        with:
+          build: ${{ env.CMDLINE_TOOLS_BUILD }}
+
+      - name: Instalar dependências
+        run: npm ci --prefix e2e
+
+      - name: Baixar o APK
+        uses: actions/download-artifact@v8
+        with:
+          name: app-release-${{ env.EMULATOR_ARCH }}
+          path: ${{ runner.temp }}/apk
+
       # Hardware acceleration for the Android emulator on Linux runners.
       - name: Habilitar KVM
-        if: ${{ github.event_name != 'push' }}
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
       - name: Rodar os testes e2e no emulador
-        if: ${{ github.event_name != 'push' }}
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          APK_PATH: ${{ runner.temp }}/apk/app-release.apk
+          E2E_SHARD: ${{ matrix.shard }}
         with:
           api-level: ${{ env.EMULATOR_API_LEVEL }}
           target: google_apis
@@ -136,10 +160,10 @@ jobs:
           script: cd e2e && npm test
 
       - name: Publicar o relatório dos testes
-        if: ${{ !cancelled() && github.event_name != 'push' }}
+        if: ${{ !cancelled() }}
         uses: dorny/test-reporter@v3
         with:
-          name: Resultado dos testes e2e
+          name: Resultado dos testes e2e (${{ matrix.shard }}/2)
           path: e2e/reports/junit/*.xml
           reporter: java-junit
           fail-on-empty: false
@@ -148,8 +172,29 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7
         with:
-          name: e2e-diagnostico
+          name: e2e-diagnostico-${{ matrix.shard }}
           path: |
             e2e/reports/
             e2e/logs/
           retention-days: 7
+
+  # Keeps the name of the check required by the main branch protection, so splitting the suite did not
+  # change it: it passes only when the build and both halves of the suite passed (on main, without e2e,
+  # only the build counts).
+  result:
+    name: Build Android e testes e2e
+    needs: [build, e2e]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Conferir o build e os testes
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          E2E_RESULT: ${{ needs.e2e.result }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "Build: $BUILD_RESULT / e2e: $E2E_RESULT"
+          if [ "$BUILD_RESULT" != success ]; then exit 1; fi
+          if [ "$EVENT_NAME" = push ] && [ "$E2E_RESULT" = skipped ]; then exit 0; fi
+          [ "$E2E_RESULT" = success ]

@@ -1,0 +1,24 @@
+name: Atualizar as ferramentas de linha de comando do Android SDK
+description: >
+  The runner's avdmanager is older than the SDK repository ("SDK XML version 4") and intermittently fails to
+  create the AVD with "hwMap is null", so the command-line tools are replaced by a newer build.
+
+inputs:
+  build:
+    description: Command-line tools build number.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        CMDLINE_TOOLS_BUILD: ${{ inputs.build }}
+      run: |
+        curl -sSfL -o "$RUNNER_TEMP/cmdline-tools.zip" \
+          "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_BUILD}_latest.zip"
+        rm -rf "$ANDROID_HOME/cmdline-tools/latest"
+        unzip -q "$RUNNER_TEMP/cmdline-tools.zip" -d "$RUNNER_TEMP/cmdline-tools"
+        mv "$RUNNER_TEMP/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+        echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+        "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
