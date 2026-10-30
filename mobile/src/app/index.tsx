@@ -173,6 +173,13 @@ export default function HomeScreen() {
         />
       )}
 
+      <Pressable
+        testID="home-reply-button"
+        onPress={() => router.push('/responder')}
+        style={[styles.primaryButton, styles.replyButton, styles.outlineButton]}
+      >
+        <Text style={[styles.primaryButtonText, { color: palette.goldLight }]}>Responder figurinha</Text>
+      </Pressable>
       <View style={styles.bottomActions}>
         <Pressable
           testID="home-new-pack-button"
@@ -303,6 +310,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 24,
     paddingVertical: 16,
+  },
+  // Sits right above the bottom buttons, which keep the usual bottom margin.
+  replyButton: {
+    marginBottom: 12,
   },
   bottomActions: {
     flexDirection: 'row',

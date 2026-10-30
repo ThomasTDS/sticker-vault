@@ -96,3 +96,12 @@ export async function pushGalleryImages() {
     await browser.pushFile(`${GALLERY_DIR}/${name}`, content.toString('base64'));
   }
 }
+
+const WHATSAPP_STICKERS_DIR = '/sdcard/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Stickers';
+
+// Simulates a sticker arriving on WhatsApp: WhatsApp saves received stickers in this folder.
+// The copy becomes the most recent file there, the first one the app lists.
+export async function pushReceivedSticker(fixture: string) {
+  const content = await readFile(path.resolve(import.meta.dirname, '../fixtures/received', fixture));
+  await browser.pushFile(`${WHATSAPP_STICKERS_DIR}/${Date.now()}-${fixture}`, content.toString('base64'));
+}

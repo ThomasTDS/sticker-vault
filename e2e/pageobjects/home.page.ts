@@ -26,6 +26,10 @@ class HomePage extends BasePage {
     return this.byTestId('home-new-pack-button');
   }
 
+  get replyButton() {
+    return this.byTestId('home-reply-button');
+  }
+
   get importButton() {
     return this.byTestId('home-import-button');
   }

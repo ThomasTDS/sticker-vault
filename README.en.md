@@ -45,6 +45,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
 - **Animated stickers:** create an animated drawer and turn short gallery videos and GIFs into animated stickers (512x512 animated WebP, up to 10 s and 500 KB), generated on the device with libwebp. For files longer than 10 s, you choose the segment while seeing its first and last frames.
+- **Reply with a sticker:** pick a sticker that arrived on WhatsApp and the app suggests yours that fit as a reply. The received sticker's emojis are read from the metadata WhatsApp stores in the file (or picked by you when it has none) and go through a reply map (😂 calls for 😂🤣💀, 😭 calls for 🙏😭💔); suggestions are ordered by that map, then favorites and most used. Access to the received stickers folder is granted once, and everything is read on the device only.
 - **Sticker maker:** pick a photo, remove the background automatically (ML Kit, processed on the device) and add top and bottom captions, with a live preview.
 - **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient can tap the file and choose Sticker Vault in "Open with", share the file with Sticker Vault through another app's "Share" menu (WhatsApp, Drive, Files, etc.) or use "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
 - **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
@@ -214,6 +215,7 @@ Current coverage:
 | Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
 | Favorites and most used | Mark a favorite; unmark a favorite; share through Android; most-used ordering |
 | Animated drawers | Create an animated drawer; turn videos and GIFs into animated stickers; refuse a still photo; choose the segment of a long video or skip the file; share and receive it back keeping the animation |
+| Reply with a sticker | Ask for access to received stickers only once; suggest replies from the received sticker's emojis, in reply-map order, and send them through Android; pick the emoji of a sticker without emojis; warn when no sticker fits |
 | Sticker maker | Saving blocked without a photo; sticker with meme-style captions; remove and restore the background (`@modelo-ml`) |
 | Sharing drawers | Share as a file; blocked for an empty drawer; import a received drawer with emojis; reject an invalid file |
 | Open with | Open a drawer from the Android Files app; warn when the opened file is not a drawer |

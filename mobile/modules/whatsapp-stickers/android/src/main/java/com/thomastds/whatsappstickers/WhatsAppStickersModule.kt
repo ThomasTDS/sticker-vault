@@ -10,6 +10,7 @@ import expo.modules.kotlin.modules.ModuleDefinition
 
 class WhatsAppStickersModule : Module() {
   private var pendingPromise: Promise? = null
+  private var pendingFolderPromise: Promise? = null
 
   private val context
     get() = appContext.reactContext ?: throw Exceptions.ReactContextLost()
@@ -41,7 +42,39 @@ class WhatsAppStickersModule : Module() {
       activity.startActivityForResult(intent, ADD_PACK_REQUEST_CODE)
     }
 
+    // Received stickers: folder access granted once by the user, then listed and read through it.
+    Function("getReceivedStickersFolder") {
+      ReceivedStickers.grantedFolder(context)
+    }
+
+    AsyncFunction("pickReceivedStickersFolder") { promise: Promise ->
+      val activity = appContext.currentActivity ?: throw Exceptions.MissingActivity()
+      pendingFolderPromise?.resolve(null)
+      pendingFolderPromise = promise
+      activity.startActivityForResult(ReceivedStickers.pickFolderIntent(), PICK_FOLDER_REQUEST_CODE)
+    }
+
+    AsyncFunction("listReceivedStickers") { treeUri: String, limit: Int ->
+      ReceivedStickers.list(context, treeUri, limit).map { mapOf("uri" to it.uri, "modifiedAt" to it.modifiedAt) }
+    }
+
+    AsyncFunction("readStickerEmojis") { uri: String ->
+      ReceivedStickers.emojis(context, uri)
+    }
+
     OnActivityResult { _, payload ->
+      if (payload.requestCode == PICK_FOLDER_REQUEST_CODE) {
+        val promise = pendingFolderPromise ?: return@OnActivityResult
+        pendingFolderPromise = null
+        val treeUri = payload.data?.data
+        if (payload.resultCode != Activity.RESULT_OK || treeUri == null) {
+          promise.resolve(null)
+          return@OnActivityResult
+        }
+        ReceivedStickers.keepFolder(context, treeUri)
+        promise.resolve(treeUri.toString())
+        return@OnActivityResult
+      }
       if (payload.requestCode != ADD_PACK_REQUEST_CODE) {
         return@OnActivityResult
       }
@@ -75,6 +108,7 @@ class WhatsAppStickersModule : Module() {
     private const val EXTRA_PACK_NAME = "sticker_pack_name"
     private const val EXTRA_VALIDATION_ERROR = "validation_error"
     private const val ADD_PACK_REQUEST_CODE = 200
+    private const val PICK_FOLDER_REQUEST_CODE = 201
 
     private val WHATSAPP_PACKAGES = listOf("com.whatsapp", "com.whatsapp.w4b")
   }

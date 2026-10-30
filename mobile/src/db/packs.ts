@@ -200,6 +200,12 @@ export async function registerStickerUse(db: SQLiteDatabase, id: number) {
   await db.runAsync('UPDATE stickers SET use_count = use_count + 1, last_used_at = ? WHERE id = ?', Date.now(), id);
 }
 
+// Every sticker in the vault, used to rank reply suggestions.
+export async function listAllStickers(db: SQLiteDatabase): Promise<StickerSearchResult[]> {
+  const rows = await db.getAllAsync<StickerWithPackRow>(`${STICKER_WITH_PACK_SELECT} ORDER BY s.id`);
+  return rows.map(toSearchResult);
+}
+
 export async function listFavoriteStickers(db: SQLiteDatabase): Promise<StickerSearchResult[]> {
   const rows = await db.getAllAsync<StickerWithPackRow>(
     `${STICKER_WITH_PACK_SELECT} WHERE s.favorite = 1 ORDER BY s.id DESC LIMIT ?`,

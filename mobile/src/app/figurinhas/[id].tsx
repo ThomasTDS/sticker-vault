@@ -1,20 +1,19 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams, useTheme } from 'expo-router';
-import * as Sharing from 'expo-sharing';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   getSticker,
   parseTags,
-  registerStickerUse,
   setStickerFavorite,
   STICKER_MAX_EMOJIS,
   updateStickerDetails,
   type Sticker,
 } from '@/db/packs';
 import { EMOJI_OPTIONS } from '@/stickers/emojis';
+import { shareSticker } from '@/stickers/share-sticker';
 import { palette } from '@/theme/colors';
 
 export default function StickerScreen() {
@@ -46,18 +45,13 @@ export default function StickerScreen() {
     setSticker({ ...sticker, favorite });
   }
 
-  // Counts as a use when the share sheet opens; Android does not report which app received it.
   async function handleShare() {
     if (!sticker) {
       return;
     }
-    if (!(await Sharing.isAvailableAsync())) {
-      Alert.alert('Ops!', 'Este celular não permite compartilhar arquivos.');
-      return;
-    }
-    await registerStickerUse(db, sticker.id);
+    const shared = shareSticker(db, sticker);
     setSticker({ ...sticker, useCount: sticker.useCount + 1 });
-    await Sharing.shareAsync(sticker.fileUri, { mimeType: 'image/webp', dialogTitle: 'Mandar figurinha' });
+    await shared;
   }
 
   function toggleEmoji(emoji: string) {
