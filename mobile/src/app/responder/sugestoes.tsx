@@ -5,11 +5,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { readStickerEmojis } from '../../../modules/whatsapp-stickers';
+import { ReplySendSheet } from '@/components/reply-send-sheet';
 import { listAllStickers, type StickerSearchResult } from '@/db/packs';
 import { EMOJI_OPTIONS } from '@/stickers/emojis';
-import { replyEmojisFor, suggestReplies } from '@/stickers/reply-map';
+import { bestReplyEmoji, replyEmojisFor, suggestReplies } from '@/stickers/reply-map';
 import { getReplyTarget } from '@/stickers/reply-target';
-import { shareSticker } from '@/stickers/share-sticker';
 import { palette } from '@/theme/colors';
 
 // Shows what the received sticker says (its emojis) and the user's stickers that answer it best.
@@ -22,6 +22,7 @@ export default function ReplySuggestionsScreen() {
   const [chosen, setChosen] = useState<string[]>([]);
   const [choosing, setChoosing] = useState(false);
   const [stickers, setStickers] = useState<StickerSearchResult[]>([]);
+  const [sending, setSending] = useState<StickerSearchResult | null>(null);
 
   useEffect(() => {
     if (!targetUri) {
@@ -124,7 +125,7 @@ export default function ReplySuggestionsScreen() {
                   key={sticker.id}
                   testID={`reply-suggestion-${index}`}
                   accessibilityLabel={`Figurinha ${sticker.emojis.join(' ')}`}
-                  onPress={() => shareSticker(db, sticker)}
+                  onPress={() => setSending(sticker)}
                   style={[styles.cell, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
                   <Image source={{ uri: sticker.fileUri }} style={styles.cellImage} contentFit="contain" />
@@ -137,6 +138,14 @@ export default function ReplySuggestionsScreen() {
             <Text style={styles.hint}>Toque numa figurinha pra mandar.</Text>
           )}
         </>
+      )}
+
+      {sending && (
+        <ReplySendSheet
+          sticker={sending}
+          searchEmoji={bestReplyEmoji(chosen, sending)}
+          onClose={() => setSending(null)}
+        />
       )}
     </ScrollView>
   );

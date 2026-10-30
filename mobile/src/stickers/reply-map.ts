@@ -81,3 +81,18 @@ export function suggestReplies(
   );
   return ranked.slice(0, limit).map(({ sticker }) => sticker);
 }
+
+// The sticker's emoji that best answers the received ones: the one to search for in WhatsApp's sticker tab.
+export function bestReplyEmoji(receivedEmojis: string[], sticker: StickerSearchResult): string | null {
+  const replies = replyEmojisFor(receivedEmojis);
+  let best: string | null = null;
+  let bestPosition = Infinity;
+  for (const emoji of sticker.emojis) {
+    const position = replies.indexOf(normalizeEmoji(emoji));
+    if (position >= 0 && position < bestPosition) {
+      best = emoji;
+      bestPosition = position;
+    }
+  }
+  return best;
+}
