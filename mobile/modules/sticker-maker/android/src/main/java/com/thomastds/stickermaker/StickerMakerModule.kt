@@ -45,12 +45,14 @@ class StickerMakerModule : Module() {
         }
     }
 
-    // Turns a short video into a 512x512 animated WebP of at most 500 KB.
+    // Turns a short video or an animated GIF into a 512x512 animated WebP of at most 500 KB.
     AsyncFunction("createAnimatedSticker") { uri: String ->
       try {
-        Uri.fromFile(AnimatedStickers.fromVideo(context, uri)).toString()
+        Uri.fromFile(AnimatedStickers.create(context, uri)).toString()
       } catch (error: AnimatedStickers.VideoTooShortException) {
         throw CodedException("ERR_VIDEO_TOO_SHORT", error.message, error)
+      } catch (error: AnimatedStickers.NotAnimatedException) {
+        throw CodedException("ERR_NOT_ANIMATED", error.message, error)
       } catch (error: AnimatedStickers.TooLargeException) {
         throw CodedException("ERR_ANIMATION_TOO_LARGE", error.message, error)
       }

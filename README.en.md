@@ -44,7 +44,7 @@ Sticker Vault is a vault for your stickers: each pack is a **drawer** (*gaveta*)
 - **Most used:** the stickers shared most from the app show up on a home screen shelf, with their share count.
 - **Removing stickers:** long-press a sticker.
 - **Sending to WhatsApp:** with 3 or more stickers, the "Mandar pro WhatsApp" button opens WhatsApp's (or WhatsApp Business') own confirmation screen. The drawer icon (96x96) is generated from the first sticker.
-- **Animated stickers:** create an animated drawer and turn short gallery videos into animated stickers (512x512 animated WebP, up to 10 s and 500 KB), generated on the device with libwebp.
+- **Animated stickers:** create an animated drawer and turn short gallery videos and GIFs into animated stickers (512x512 animated WebP, up to 10 s and 500 KB), generated on the device with libwebp.
 - **Sticker maker:** pick a photo, remove the background automatically (ML Kit, processed on the device) and add top and bottom captions, with a live preview.
 - **Sharing drawers:** generate a `.stickervault` file with the stickers, emojis and tags and send it through any app. The recipient can tap the file and choose Sticker Vault in "Open with", share the file with Sticker Vault through another app's "Share" menu (WhatsApp, Drive, Files, etc.) or use "Importar gaveta" on the home screen; received images are always re-encoded into the WhatsApp format.
 - **Visual identity:** dark theme with a brown background, cream text, gold accents and the title in the Major Mono Display font.
@@ -213,7 +213,7 @@ Current coverage:
 | Gallery stickers | Add stickers; reach the WhatsApp minimum; remove a sticker |
 | Sending to WhatsApp | Sending blocked below the minimum; sending enabled with 3 stickers; WhatsApp-not-installed warning |
 | Favorites and most used | Mark a favorite; unmark a favorite; share through Android; most-used ordering |
-| Animated drawers | Create an animated drawer; turn videos into animated stickers; share and receive it back keeping the animation |
+| Animated drawers | Create an animated drawer; turn videos and GIFs into animated stickers; refuse a still photo; share and receive it back keeping the animation |
 | Sticker maker | Saving blocked without a photo; sticker with meme-style captions; remove and restore the background (`@modelo-ml`) |
 | Sharing drawers | Share as a file; blocked for an empty drawer; import a received drawer with emojis; reject an invalid file |
 | Open with | Open a drawer from the Android Files app; warn when the opened file is not a drawer |
@@ -309,7 +309,7 @@ On CI each feature gets one automatic retry to absorb emulator instability. The 
 
 ## Next steps
 
-- Animated stickers from GIFs.
+- Choose the segment of the video or GIF before animating.
 
 ## Author
 

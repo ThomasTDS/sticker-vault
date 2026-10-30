@@ -72,7 +72,7 @@ export default function NewPackScreen() {
         <View style={styles.animatedText}>
           <Text style={[styles.label, { color: colors.text }]}>Gaveta animada</Text>
           <Text style={styles.animatedHint}>
-            Guarda figurinhas animadas feitas a partir de vídeos curtos. O WhatsApp não mistura figurinhas animadas e
+            Guarda figurinhas animadas feitas a partir de vídeos curtos e GIFs. O WhatsApp não mistura figurinhas animadas e
             estáticas no mesmo pacote.
           </Text>
         </View>

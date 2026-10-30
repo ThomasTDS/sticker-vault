@@ -16,5 +16,5 @@ export const removeBackground = (uri: string) => StickerMaker.removeBackground(u
 export const composeSticker = (uri: string, topText: string, bottomText: string) =>
   StickerMaker.composeSticker(uri, topText, bottomText);
 
-// Turns a short video into an animated sticker (512x512 animated WebP, at most 10 s and 500 KB).
-export const createAnimatedSticker = (videoUri: string) => StickerMaker.createAnimatedSticker(videoUri);
+// Turns a short video or an animated GIF into an animated sticker (512x512 animated WebP, at most 10 s and 500 KB).
+export const createAnimatedSticker = (mediaUri: string) => StickerMaker.createAnimatedSticker(mediaUri);

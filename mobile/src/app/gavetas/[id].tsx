@@ -59,10 +59,10 @@ export default function PackScreen() {
       return;
     }
 
-    // Animated drawers take short videos; static drawers take photos.
+    // Animated drawers take short videos and animated GIFs; static drawers take photos.
     const animated = pack?.animated ?? false;
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: [animated ? 'videos' : 'images'],
+      mediaTypes: animated ? ['videos', 'images'] : ['images'],
       allowsMultipleSelection: true,
       selectionLimit: remaining,
       quality: 1,
@@ -74,6 +74,10 @@ export default function PackScreen() {
     setProcessing(true);
     try {
       for (const asset of result.assets.slice(0, remaining)) {
+        // The picker cannot list GIFs only, so other photos are refused before reaching the native side.
+        if (animated && asset.type === 'image' && asset.mimeType && asset.mimeType !== 'image/gif') {
+          throw Object.assign(new Error('Not an animated image'), { code: 'ERR_NOT_ANIMATED' });
+        }
         const fileUri = animated
           ? await createAnimatedStickerFile(packId, asset.uri)
           : await createStickerFile(packId, asset);
@@ -83,13 +87,15 @@ export default function PackScreen() {
       const code = (error as { code?: string }).code;
       if (code === 'ERR_VIDEO_TOO_SHORT') {
         Alert.alert('Vídeo curto demais', 'Use um vídeo com pelo menos meio segundo.');
+      } else if (code === 'ERR_NOT_ANIMATED') {
+        Alert.alert('Foto parada', 'Gaveta animada só aceita vídeos e GIFs. Fotos vão numa gaveta comum.');
       } else if (code === 'ERR_ANIMATION_TOO_LARGE') {
-        Alert.alert('Animação pesada demais', 'Tenta um vídeo mais curto ou com menos movimento.');
+        Alert.alert('Animação pesada demais', 'Tenta um vídeo ou GIF mais curto, ou com menos movimento.');
       } else {
         Alert.alert(
           'Ops!',
           animated
-            ? 'Não deu pra animar um dos vídeos. Tenta de novo?'
+            ? 'Não deu pra animar um dos arquivos. Tenta de novo?'
             : 'Não deu pra guardar uma das imagens. Tenta de novo?',
         );
       }
@@ -255,7 +261,7 @@ export default function PackScreen() {
               onPress={handleAddFromGallery}
               style={[styles.primaryButton, styles.actionRowButton, { backgroundColor: colors.primary }]}
             >
-              <Text style={styles.primaryButtonText}>{pack.animated ? 'Vídeos da galeria' : 'Da galeria'}</Text>
+              <Text style={styles.primaryButtonText}>{pack.animated ? 'Vídeos e GIFs' : 'Da galeria'}</Text>
             </Pressable>
             {!pack.animated && (
               <Pressable

@@ -38,21 +38,45 @@ export async function resetApp() {
 
 const FIXTURE_VIDEO = 'clip.mp4';
 const VIDEOS_DIR = '/sdcard/Movies/StickerVaultE2E';
+const FIXTURE_GIF = 'bolinha.gif';
 
-// Copies the fixture video to the device gallery three times (clip-1.mp4 to clip-3.mp4),
-// so the photo picker lists them as the most recent videos.
-export async function pushGalleryVideos() {
-  const content = await readFile(path.resolve(import.meta.dirname, '../fixtures/videos', FIXTURE_VIDEO));
+// Copies a fixture to the device gallery three times (name-1 to name-3), so the photo picker lists the copies
+// as the most recent items. The files are scanned because videos are indexed without metadata (duration)
+// until then, and the photo picker hides them; for GIFs the scan is harmless.
+async function pushGalleryCopies(fixture: string, remoteDir: string, prepare = (content: Buffer) => content) {
+  const content = prepare(await readFile(path.resolve(import.meta.dirname, '../fixtures', fixture)));
+  const { name, ext } = path.parse(fixture);
   for (let index = 1; index <= 3; index++) {
-    const remotePath = `${VIDEOS_DIR}/clip-${index}.mp4`;
+    const remotePath = `${remoteDir}/${name}-${index}${ext}`;
     await browser.pushFile(remotePath, content.toString('base64'));
-    // Unlike images, videos are indexed without metadata (duration) until scanned, and the photo picker hides them.
     await browser.execute('mobile: broadcast', {
       action: 'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
       uri: `file://${remotePath}`,
     });
   }
 }
+
+// MP4 dates count seconds since 1904-01-01.
+const MP4_EPOCH_OFFSET_S = 2082844800;
+
+// The photo picker sorts by the date the media was taken, which for videos comes from the MP4 header
+// (mvhd box, version 0: creation time right after version and flags). Setting it to now makes the copies
+// newer than the photos pushed by other scenarios, as a video just recorded on the phone would be.
+function withRecordingDateNow(content: Buffer) {
+  const mvhd = content.indexOf('mvhd');
+  if (mvhd < 0 || content[mvhd + 4] !== 0) {
+    throw new Error('The fixture video has no version 0 mvhd box');
+  }
+  const copy = Buffer.from(content);
+  const now = Math.floor(Date.now() / 1000) + MP4_EPOCH_OFFSET_S;
+  copy.writeUInt32BE(now, mvhd + 8);
+  copy.writeUInt32BE(now, mvhd + 12);
+  return copy;
+}
+
+export const pushGalleryVideos = () => pushGalleryCopies(`videos/${FIXTURE_VIDEO}`, VIDEOS_DIR, withRecordingDateNow);
+
+export const pushGalleryGifs = () => pushGalleryCopies(`gifs/${FIXTURE_GIF}`, GALLERY_DIR);
 
 // Copies the fixture images to the device gallery, making them the most recent photos.
 // On Android 11+ shared storage is indexed by MediaProvider as soon as the file is written.
