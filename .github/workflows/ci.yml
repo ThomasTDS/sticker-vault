@@ -3,6 +3,10 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  # On main only the APK is built (no e2e): it saves the Gradle cache, which setup-gradle writes only on the
+  # default branch, so pull requests start with the dependencies already downloaded.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 # A new push to the same pull request cancels the run that is still in progress.
@@ -19,6 +23,9 @@ env:
   # Android command-line tools (sdkmanager/avdmanager) build, newer than the one on the runner image.
   CMDLINE_TOOLS_BUILD: 16111833
   EMULATOR_API_LEVEL: 34
+  # Native code (React Native libraries and libwebp) is compiled only for the emulator's architecture.
+  # The release APK built outside CI keeps all four (mobile/android/gradle.properties).
+  EMULATOR_ARCH: x86_64
 
 jobs:
   typecheck:
@@ -99,35 +106,37 @@ jobs:
         run: |
           npm run prebuild
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease -PreactNativeArchitectures=${EMULATOR_ARCH}
 
       - name: Publicar o APK
         uses: actions/upload-artifact@v7
         with:
-          name: app-release-apk
+          name: app-release-${{ env.EMULATOR_ARCH }}
           path: mobile/android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7
 
       # Hardware acceleration for the Android emulator on Linux runners.
       - name: Habilitar KVM
+        if: ${{ github.event_name != 'push' }}
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
       - name: Rodar os testes e2e no emulador
+        if: ${{ github.event_name != 'push' }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.EMULATOR_API_LEVEL }}
           target: google_apis
-          arch: x86_64
+          arch: ${{ env.EMULATOR_ARCH }}
           ram-size: 4096M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: cd e2e && npm test
 
       - name: Publicar o relatório dos testes
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.event_name != 'push' }}
         uses: dorny/test-reporter@v3
         with:
           name: Resultado dos testes e2e
