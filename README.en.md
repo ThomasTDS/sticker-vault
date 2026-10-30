@@ -289,12 +289,14 @@ Every pull request to `main` is validated by GitHub Actions (`.github/workflows/
 
 1. **Type checking:** `npm ci` and `npm run typecheck` in `mobile/` and `e2e/`.
 2. **Android build and e2e tests:**
-   - installs JDK 17 and CMake 3.31.6 and builds the release APK, published as an artifact;
+   - installs JDK 17 and CMake 3.31.6 and builds the release APK only for the emulator architecture (x86_64), published as an artifact;
    - starts an Android 14 emulator (API 34, `google_apis` image, the same one used locally) and runs the full suite;
    - publishes the test results on the pull request itself;
    - on failure, attaches the screenshots and Appium logs.
 
 The `main` branch is protected: a pull request can only be merged once both CI checks pass.
+
+After each merge, the workflow runs on `main` up to the build only, without the tests, to save the Gradle cache; the next pull requests start with the dependencies already downloaded.
 
 On CI each feature gets one automatic retry to absorb emulator instability. The `@modelo-ml` scenario does not run on CI.
 
@@ -309,7 +311,7 @@ On CI each feature gets one automatic retry to absorb emulator instability. The 
 
 ## Next steps
 
-- Faster CI build, compiling libwebp only for the emulator architecture.
+- Split the e2e suite across two emulators running in parallel on CI.
 
 ## Author
 

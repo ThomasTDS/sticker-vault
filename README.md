@@ -289,12 +289,14 @@ Todo pull request para a `main` é validado pelo GitHub Actions (`.github/workfl
 
 1. **Verificação de tipos:** `npm ci` e `npm run typecheck` em `mobile/` e `e2e/`.
 2. **Build Android e testes e2e:**
-   - instala o JDK 17 e o CMake 3.31.6 e gera o APK de release, publicado como artefato;
+   - instala o JDK 17 e o CMake 3.31.6 e gera o APK de release só para a arquitetura do emulador (x86_64), publicado como artefato;
    - sobe um emulador Android 14 (API 34, imagem `google_apis`, a mesma usada localmente) e executa a suíte completa;
    - publica o resultado dos testes no próprio pull request;
    - em caso de falha, anexa as capturas de tela e os logs do Appium.
 
 A branch `main` é protegida: o merge de um pull request só é liberado com os dois checks do CI aprovados.
+
+Depois de cada merge, o workflow roda na `main` só até o build, sem os testes, para salvar o cache do Gradle; os pull requests seguintes começam com as dependências já baixadas.
 
 No CI, cada funcionalidade tem uma nova tentativa automática para absorver instabilidades do emulador. O cenário `@modelo-ml` não roda no CI.
 
@@ -309,7 +311,7 @@ No CI, cada funcionalidade tem uma nova tentativa automática para absorver inst
 
 ## Próximos passos
 
-- Build do CI mais rápido, compilando a libwebp só para a arquitetura do emulador.
+- Dividir a suíte e2e entre dois emuladores em paralelo no CI.
 
 ## Autor
 
