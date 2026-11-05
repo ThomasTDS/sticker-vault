@@ -4,7 +4,7 @@
 
 # Sticker Vault
 
-**Português** | [English](README.en.md)
+**Português** | [English](README.en.md) | [Español](README.es.md)
 
 Aplicativo Android para guardar figurinhas do WhatsApp e adicioná-las ao aplicativo em poucos cliques, desenvolvido junto com uma suíte de testes automatizados com Appium.
 

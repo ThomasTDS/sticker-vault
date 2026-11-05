@@ -4,7 +4,7 @@
 
 # Sticker Vault
 
-[Português](README.md) | **English**
+[Português](README.md) | **English** | [Español](README.es.md)
 
 Android app for storing WhatsApp stickers and adding them to WhatsApp in just a few taps, built alongside an automated test suite with Appium.
 
