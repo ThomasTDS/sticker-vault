@@ -1,0 +1,115 @@
+name: Release
+
+# Pushing a tag such as v1.0.0 publishes a GitHub Release with the signed APK. The tag is the only place where
+# the version is written: it sets versionName and versionCode for the build.
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 24
+  CMAKE_VERSION: 3.31.6
+  # Android command-line tools (sdkmanager/avdmanager) build, newer than the one on the runner image.
+  CMDLINE_TOOLS_BUILD: 16111833
+
+jobs:
+  release:
+    name: Publicar a versão
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Only what already went through a pull request and its checks is published.
+      - name: Conferir se a tag está na main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - uses: ./.github/actions/android-cmdline-tools
+        with:
+          build: ${{ env.CMDLINE_TOOLS_BUILD }}
+
+      # The project pins CMake 3.31.6 (see mobile/plugins/with-cmake-version.js).
+      - name: Instalar CMake do Android SDK
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "cmake;${CMAKE_VERSION}" > /dev/null
+
+      - name: Instalar dependências
+        run: npm ci --prefix mobile
+
+      - name: Testes do app (Jest)
+        working-directory: mobile
+        run: npm test -- --ci
+
+      - name: Aplicar a versão da tag
+        working-directory: mobile
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const version = process.env.TAG.slice(1);
+            const [major, minor, patch] = version.split('.').map(Number);
+            const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            app.expo.version = version;
+            app.expo.android.versionCode = major * 10000 + minor * 100 + patch;
+            fs.writeFileSync('app.json', JSON.stringify(app, null, 2));
+          "
+
+      - name: Preparar a chave de assinatura
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode --ignore-garbage > "$RUNNER_TEMP/release.jks"
+          test -s "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      # All four architectures (the default in mobile/android/gradle.properties), so it runs on any phone.
+      - name: Gerar o APK assinado
+        working-directory: mobile
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          npm run prebuild
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Conferir a assinatura
+        working-directory: mobile/android/app/build/outputs/apk/release
+        run: |
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)apksigner
+          "$apksigner" verify --print-certs app-release.apk | tee signature.txt
+          if grep -q "Android Debug" signature.txt; then
+            echo "O APK foi assinado com a chave de debug."
+            exit 1
+          fi
+
+      - name: Publicar a Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          apk="$RUNNER_TEMP/sticker-vault-$TAG.apk"
+          cp mobile/android/app/build/outputs/apk/release/app-release.apk "$apk"
+          gh release create "$TAG" "$apk" --title "Sticker Vault $TAG" --generate-notes --verify-tag

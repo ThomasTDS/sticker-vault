@@ -22,6 +22,7 @@ Projeto de estudo, sem fins lucrativos, com dois objetivos: construir o aplicati
 - [Executando os testes](#executando-os-testes)
 - [Estratégia de testes](#estratégia-de-testes)
 - [Integração contínua](#integração-contínua)
+- [Versões publicadas](#versões-publicadas)
 - [Solução de problemas](#solução-de-problemas)
 - [Próximos passos](#próximos-passos)
 
@@ -329,6 +330,21 @@ A branch `main` é protegida: o merge de um pull request só é liberado com os 
 Depois de cada merge, o workflow roda na `main` só até o build e os testes unitários, sem os e2e, para salvar o cache do Gradle; os pull requests seguintes começam com as dependências já baixadas.
 
 No CI, cada funcionalidade tem uma nova tentativa automática para absorver instabilidades do emulador. O cenário `@modelo-ml` não roda no CI.
+
+## Versões publicadas
+
+Cada versão fica na aba **Releases** do GitHub, com o APK pronto para instalar em qualquer celular Android. Criar uma tag na `main` dispara `.github/workflows/release.yml`:
+
+```powershell
+git checkout main
+git pull
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+O workflow confere se a tag está na `main`, roda os testes do app, gera o APK com as 4 arquiteturas, assina, confere a assinatura e publica a Release com as notas geradas a partir dos pull requests. A tag é o único lugar onde a versão é escrita: `v1.2.3` vira `versionName` 1.2.3 e `versionCode` 10203.
+
+A chave de assinatura fica fora do repositório, nos secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` e `ANDROID_KEY_PASSWORD`. Fora do workflow de versões (builds locais e de pull requests), o APK continua usando a chave de debug.
 
 ## Solução de problemas
 
