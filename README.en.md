@@ -22,6 +22,7 @@ A non-profit study project with two goals: building the app and ensuring its qua
 - [Running the tests](#running-the-tests)
 - [Testing strategy](#testing-strategy)
 - [Continuous integration](#continuous-integration)
+- [Published versions](#published-versions)
 - [Troubleshooting](#troubleshooting)
 - [Next steps](#next-steps)
 
@@ -329,6 +330,21 @@ The `main` branch is protected: a pull request can only be merged once the **Ver
 After each merge, the workflow runs on `main` up to the build and the unit tests, without the e2e tests, to save the Gradle cache; the next pull requests start with the dependencies already downloaded.
 
 On CI each feature gets one automatic retry to absorb emulator instability. The `@modelo-ml` scenario does not run on CI.
+
+## Published versions
+
+Each version lives in the GitHub **Releases** tab, with an APK ready to install on any Android phone. Creating a tag on `main` triggers `.github/workflows/release.yml`:
+
+```powershell
+git checkout main
+git pull
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow checks that the tag is on `main`, runs the app tests, builds the APK for all 4 architectures, signs it, verifies the signature and publishes the Release with notes generated from the pull requests. The tag is the only place where the version is written: `v1.2.3` becomes `versionName` 1.2.3 and `versionCode` 10203.
+
+The signing key stays out of the repository, in the `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` secrets. Outside the release workflow (local and pull request builds), the APK keeps using the debug key.
 
 ## Troubleshooting
 
